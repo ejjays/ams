@@ -266,13 +266,9 @@ if ($method === 'POST' && $action === 'save') {
         try {
             require_once __DIR__ . '/services/Gemini.php';
             $indicators = $pdo->query("SELECT id, title FROM indicator_labels LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
-            $indList = "";
-            foreach($indicators as $ind) { $indList .= "[ID:{$ind['id']}] {$ind['title']}\n"; }
+            $suggestedId = Gemini::suggestIndicator($title, $indicators);
             
-            $prompt = "Given the document title '{$title}', pick the most relevant Indicator ID from this list. Return ONLY the ID number, nothing else:\n" . $indList;
-            $suggestedId = trim(Gemini::ask($prompt));
-            
-            if (is_numeric($suggestedId)) {
+            if ($suggestedId) {
                 $pdo->prepare("INSERT IGNORE INTO indicator_document_links (indicator_id, document_id, uploaded_by) VALUES (?, ?, ?)")
                     ->execute([$suggestedId, $id, $userId]);
             }

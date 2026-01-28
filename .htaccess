@@ -7,6 +7,12 @@ AddType application/json .json
 AddType font/woff2 .woff2
 AddType font/woff .woff
 
+# 1) Block access to sensitive files
+<FilesMatch "^\.|\.(env|sql|log|yml|md)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
 <IfModule mod_rewrite.c>
     Options +FollowSymLinks
     RewriteEngine On

@@ -250,16 +250,13 @@ function get_ai_analytics($pdo) {
         $stmt = $pdo->query($sql);
         $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $prompt = "As an Accreditation Assistant, summarize this progress for the dashboard in 2-3 concise sentences. Mention specific percentages: ";
         foreach($stats as &$s) {
-            $perc = $s['total_required'] > 0 ? round(($s['uploaded_count'] / $s['total_required']) * 100) : 0;
-            $s['percentage'] = $perc;
-            $prompt .= "{$s['program']}: {$perc}%, ";
+            $s['percentage'] = $s['total_required'] > 0 ? round(($s['uploaded_count'] / $s['total_required']) * 100) : 0;
         }
-        unset($s); // break the reference
+        unset($s);
 
-        // 2. Get AI Summary
-        $summary = Gemini::ask($prompt) ?: "Progress data updated. Please check compliance details per program.";
+        // 2. Get AI Summary from Service
+        $summary = Gemini::getProgressSummary($stats);
 
         return [
             'stats' => $stats,
