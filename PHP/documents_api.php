@@ -270,9 +270,9 @@ if ($method === 'POST' && $action === 'save') {
         
         // --- START: AI AUTO-TAGGING ---
         try {
-            require_once __DIR__ . '/services/Gemini.php';
+            require_once __DIR__ . '/services/AIService.php';
             $indicators = $pdo->query("SELECT id, title FROM indicator_labels LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
-            $suggestedId = Gemini::suggestIndicator($title, $indicators);
+            $suggestedId = AIService::suggestIndicator($title, $indicators);
             
             if ($suggestedId) {
                 $pdo->prepare("INSERT IGNORE INTO indicator_document_links (indicator_id, document_id, uploaded_by) VALUES (?, ?, ?)")
@@ -446,8 +446,8 @@ if ($method === 'GET' && $action === 'ai_insight') {
         }
     }
 
-    require_once __DIR__ . '/services/Gemini.php';
-    $insight = Gemini::getDocumentInsight($doc['title'], $doc['comment'], $content);
+    require_once __DIR__ . '/services/AIService.php';
+    $insight = AIService::getDocumentInsight($doc['title'], $doc['comment'], $content);
 
     jexit(true, ['insight' => $insight]);
 }

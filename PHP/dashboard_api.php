@@ -233,7 +233,7 @@ if ($action === 'ai_analytics') {
  * Calculates compliance and generates a Gemini summary.
  */
 function get_ai_analytics($pdo) {
-    require_once __DIR__ . '/services/Gemini.php';
+    require_once __DIR__ . '/services/AIService.php';
     
     try {
         // 1. Calculate Progress
@@ -266,7 +266,7 @@ function get_ai_analytics($pdo) {
         unset($s);
 
         // 2. Get AI Summary from Service
-        $summary = Gemini::getProgressSummary($stats);
+        $summary = AIService::getProgressSummary($stats);
 
         return [
             'stats' => $stats,

@@ -155,12 +155,12 @@ function active($page, $current)
     <div id="aiInsightModal" class="modal hidden">
         <div class="modal-backdrop bg-slate-900/40 backdrop-blur-sm" data-close="true"></div>
         <div class="modal-card w-[640px] border-0 bg-white/95 shadow-2xl overflow-hidden rounded-[2rem]">
-            <div class="bg-indigo-600 px-8 py-5 flex items-center justify-between">
+            <div class="bg-indigo-600 px-8 py-5 flex items-center rounded-lg justify-between">
                 <div class="flex items-center gap-3 text-white">
                     <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
                         <i class="fa-solid fa-wand-magic-sparkles text-sm animate-pulse"></i>
                     </div>
-                    <h3 class="text-lg font-bold tracking-tight uppercase">AI Document Analysis</h3>
+                    <h3 class="text-lg font-bold tracking-tight uppercase rounded-lg">AI Document Analysis</h3>
                 </div>
                 <button id="aiInsightClose" class="w-8 h-8 rounded-full hover:bg-white/10 text-white transition-colors" data-close="true">
                     <i class="fa-solid fa-xmark"></i>

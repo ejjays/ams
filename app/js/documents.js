@@ -135,8 +135,6 @@
             });
         });
 
-        // UPDATED: Removed delete and archive event listeners since buttons are gone
-
         // share
         docList.querySelectorAll('[data-share]').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -168,21 +166,34 @@
 
         // --- NEW: AI Insight Modal Handler ---
         let typingTimer;
-        const openAIInsight = (text) => {
+        const openAIInsight = (rawText) => {
             const modal = $('aiInsightModal');
             const content = $('aiInsightContent');
             content.innerHTML = '';
             clearTimeout(typingTimer);
             open(modal);
             
+            // Simple Markdown Parser (Bold & Newlines)
+            const formatted = rawText
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-indigo-900 font-black">$1</strong>')
+                .replace(/\n/g, '<br/>');
+
             let i = 0;
+            let currentHtml = "";
             const type = () => {
-                if (i < text.length) {
-                    content.innerHTML += text.charAt(i);
-                    i++;
-                    // Auto-scroll to bottom as it types
+                if (i < formatted.length) {
+                    // If we encounter a tag, skip to end of tag to prevent broken HTML
+                    if (formatted[i] === '<') {
+                        const tagEnd = formatted.indexOf('>', i);
+                        currentHtml += formatted.substring(i, tagEnd + 1);
+                        i = tagEnd + 1;
+                    } else {
+                        currentHtml += formatted[i];
+                        i++;
+                    }
+                    content.innerHTML = currentHtml;
                     content.scrollTop = content.scrollHeight;
-                    typingTimer = setTimeout(type, 5); // Faster typing
+                    typingTimer = setTimeout(type, 5);
                 }
             };
             type();
