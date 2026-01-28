@@ -88,18 +88,83 @@
     }
 
     // Render Notices & Calendar
-    const list = document.getElementById('noticeList');
-    list.innerHTML = (notices||[]).map(n => `<li class="notice-item"><div><div style="font-weight:600">${n.title}</div><div class="notice-meta"><span>${n.date}</span><span><i class="fa-regular fa-eye"></i> ${n.views}</span></div></div><div>⋮</div></li>`).join('');
+    const noticeContainer = document.getElementById('noticeList');
+    let noticePage = 0;
+    const noticesPerPage = 4;
+
+    const renderNotices = () => {
+      const start = noticePage * noticesPerPage;
+      const totalPages = Math.ceil((notices || []).length / noticesPerPage);
+      const paginated = (notices || []).slice(start, start + noticesPerPage);
+      
+      noticeContainer.innerHTML = paginated.map((n, idx) => `
+        <li class="notice-item-modern" style="animation-delay: ${idx * 50}ms">
+          <div class="flex flex-col gap-1">
+            <div class="font-bold text-slate-800 leading-tight">${n.title}</div>
+            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              <span><i class="fa-regular fa-clock mr-1"></i>${n.date}</span>
+              <span><i class="fa-regular fa-eye mr-1"></i>${n.views} VIEWS</span>
+            </div>
+          </div>
+        </li>
+      `).join('');
+
+      // Add simple pagination controls if needed
+      if ((notices || []).length > noticesPerPage) {
+        noticeContainer.innerHTML += `
+          <div class="flex items-center justify-center gap-6 pt-6">
+            <button id="noticePrev" class="cal-btn" ${noticePage === 0 ? 'disabled style="opacity:0.3"' : ''}><i class="fa-solid fa-chevron-left text-xs"></i></button>
+            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${noticePage + 1} <span class="mx-1 text-slate-200">/</span> ${totalPages}</span>
+            <button id="noticeNext" class="cal-btn" ${(noticePage + 1) * noticesPerPage >= (notices || []).length ? 'disabled style="opacity:0.3"' : ''}><i class="fa-solid fa-chevron-right text-xs"></i></button>
+          </div>
+        `;
+        document.getElementById('noticePrev').onclick = () => { if(noticePage > 0) { noticePage--; renderNotices(); }};
+        document.getElementById('noticeNext').onclick = () => { if((noticePage + 1) * noticesPerPage < notices.length) { noticePage++; renderNotices(); }};
+      }
+    };
+    renderNotices();
     
     const cal = $('#calendar'); const now = new Date(); let ym = { y: now.getFullYear(), m: now.getMonth() };
     const evSet = new Set((events||[]).map(e=>e.date));
     const renderCal = () => {
       const first = new Date(ym.y, ym.m, 1), last = new Date(ym.y, ym.m+1, 0);
       const monthName = first.toLocaleString(undefined, {month:'long', year:'numeric'});
-      let html = `<div class="cal-header"><button class="btn-primary" id="calPrev"><i class="fa-solid fa-chevron-left"></i></button><div style="font-weight:600">${monthName}</div><button class="btn-primary" id="calNext"><i class="fa-solid fa-chevron-right"></i></button></div>`;
+      let html = `<div class="cal-header">
+        <button class="cal-btn" id="calPrev"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+        <div class="text-sm font-black text-slate-700 uppercase tracking-widest">${monthName}</div>
+        <button class="cal-btn" id="calNext"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+      </div>`;
       html += `<table><thead><tr>${['Su','Mo','Tu','We','Th','Fr','Sa'].map(d=>`<th>${d}</th>`).join('')}</tr></thead><tbody>`;
+      
       let day = 1, started = false;
-      for(let r=0;r<6;r++){ html += '<tr>'; for(let c=0;c<7;c++){ const isStart = (!started && c===first.getDay()); if (!started && !isStart){ html += '<td></td>'; continue; } started = true; if (day>last.getDate()){ html += '<td></td>'; continue; } const dstr = `${ym.y}-${String(ym.m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; const cls = []; if (evSet.has(dstr)) cls.push('event'); const td = new Date(); if (ym.y===td.getFullYear() && ym.m===td.getMonth() && day===td.getDate()) cls.push('today'); html += `<td class="${cls.join(' ')}">${day}</td>`; day++; } html += '</tr>'; } html += '</tbody></table>'; cal.innerHTML = html; document.getElementById('calPrev').onclick = ()=>{ ym.m--; if (ym.m<0){ ym.y--; ym.m=11; } renderCal(); }; document.getElementById('calNext').onclick = ()=>{ ym.m++; if (ym.m>11){ ym.y++; ym.m=0; } renderCal(); }; };
+      // FIX: Dynamically calculate needed rows to prevent extra empty rows
+      const totalCellsNeeded = first.getDay() + last.getDate();
+      const totalRows = Math.ceil(totalCellsNeeded / 7);
+
+      for(let r=0; r < totalRows; r++){ 
+        html += '<tr>'; 
+        for(let c=0; c < 7; c++){ 
+          const isStart = (!started && c===first.getDay()); 
+          if (!started && !isStart){ html += '<td></td>'; continue; } 
+          started = true; 
+          if (day>last.getDate()){ html += '<td></td>'; continue; } 
+          
+          const dstr = `${ym.y}-${String(ym.m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; 
+          const cls = []; 
+          if (evSet.has(dstr)) cls.push('event'); 
+          const td = new Date(); 
+          if (ym.y===td.getFullYear() && ym.m===td.getMonth() && day===td.getDate()) cls.push('today'); 
+          
+          html += `<td class="${cls.join(' ')}">${day}</td>`; 
+          day++; 
+        } 
+        html += '</tr>'; 
+      } 
+      html += '</tbody></table>'; 
+      cal.innerHTML = html; 
+      document.getElementById('calPrev').onclick = ()=>{ ym.m--; if (ym.m<0){ ym.y--; ym.m=11; } renderCal(); }; 
+      document.getElementById('calNext').onclick = ()=>{ ym.m++; if (ym.m>11){ ym.y++; ym.m=0; } renderCal(); }; 
+    };
     renderCal();
 
     // 2. ASYNC LOAD: AI Analytics

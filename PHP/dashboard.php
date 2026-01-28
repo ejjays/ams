@@ -61,57 +61,59 @@ function active($page, $current)
 
   <!-- AI Driven Analytics Section -->
   <section class="section">
-    <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-12">
-        <!-- AI Narrative Column -->
-        <div class="lg:col-span-5 bg-slate-50 p-8 lg:p-10 border-r border-gray-100">
-          <div class="flex items-center gap-3 mb-8">
-            <div class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
-            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">AI Intelligence Report</span>
-          </div>
-          
-          <div class="mb-8">
-            <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Executive Summary</h4>
-            <div id="aiSummary" class="text-slate-700 font-medium leading-relaxed space-y-3">
-              <div class="skeleton-text w-full"></div>
-              <div class="skeleton-text w-full"></div>
-              <div class="skeleton-text w-full"></div>
-              <div class="skeleton-text w-4/5"></div>
+    <div class="ai-aura-container shadow-2xl shadow-indigo-100">
+      <div class="ai-aura-inner bg-white overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-12">
+          <!-- AI Narrative Column -->
+          <div class="lg:col-span-5 bg-slate-50 p-8 lg:p-10 border-r border-gray-100">
+            <div class="flex items-center gap-3 mb-8">
+              <div class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
+              <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">AI Intelligence Report</span>
+            </div>
+            
+            <div class="mb-8">
+              <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Executive Summary</h4>
+              <div id="aiSummary" class="text-slate-700 font-medium leading-relaxed space-y-3">
+                <div class="skeleton-text w-full"></div>
+                <div class="skeleton-text w-full"></div>
+                <div class="skeleton-text w-full"></div>
+                <div class="skeleton-text w-4/5"></div>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Strategic Action</h4>
+              <div id="aiAction" class="text-slate-600 text-sm italic border-l-2 border-indigo-200 pl-4 space-y-2">
+                <div class="skeleton-text w-full"></div>
+                <div class="skeleton-text w-2/3"></div>
+              </div>
             </div>
           </div>
 
-          <div>
-            <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Strategic Action</h4>
-            <div id="aiAction" class="text-slate-600 text-sm italic border-l-2 border-indigo-200 pl-4 space-y-2">
-              <div class="skeleton-text w-full"></div>
-              <div class="skeleton-text w-2/3"></div>
+          <!-- Program Progress Column -->
+          <div class="lg:col-span-7 p-8 lg:p-10">
+            <div class="flex items-center justify-between mb-8">
+              <h3 class="text-lg font-bold text-slate-900">Program Status</h3>
+              <span class="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Real-time Compliance</span>
             </div>
-          </div>
-        </div>
-
-        <!-- Program Progress Column -->
-        <div class="lg:col-span-7 p-8 lg:p-10">
-          <div class="flex items-center justify-between mb-8">
-            <h3 class="text-lg font-bold text-slate-900">Program Status</h3>
-            <span class="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Real-time Compliance</span>
-          </div>
-          <div id="aiProgressBars" class="grid grid-cols-1 gap-10">
-            <!-- Skeleton Items -->
-            <div class="space-y-4">
-              <div class="flex justify-between"><div class="skeleton-text w-32"></div><div class="skeleton-text w-10"></div></div>
-              <div class="skeleton-text skeleton-bar w-full"></div>
-            </div>
-            <div class="space-y-4">
-              <div class="flex justify-between"><div class="skeleton-text w-40"></div><div class="skeleton-text w-10"></div></div>
-              <div class="skeleton-text skeleton-bar w-full"></div>
-            </div>
-            <div class="space-y-4">
-              <div class="flex justify-between"><div class="skeleton-text w-36"></div><div class="skeleton-text w-10"></div></div>
-              <div class="skeleton-text skeleton-bar w-full"></div>
-            </div>
-            <div class="space-y-4">
-              <div class="flex justify-between"><div class="skeleton-text w-44"></div><div class="skeleton-text w-10"></div></div>
-              <div class="skeleton-text skeleton-bar w-full"></div>
+            <div id="aiProgressBars" class="grid grid-cols-1 gap-10">
+              <!-- Skeleton Items -->
+              <div class="space-y-4">
+                <div class="flex justify-between"><div class="skeleton-text w-32"></div><div class="skeleton-text w-10"></div></div>
+                <div class="skeleton-text skeleton-bar w-full"></div>
+              </div>
+              <div class="space-y-4">
+                <div class="flex justify-between"><div class="skeleton-text w-40"></div><div class="skeleton-text w-10"></div></div>
+                <div class="skeleton-text skeleton-bar w-full"></div>
+              </div>
+              <div class="space-y-4">
+                <div class="flex justify-between"><div class="skeleton-text w-36"></div><div class="skeleton-text w-10"></div></div>
+                <div class="skeleton-text skeleton-bar w-full"></div>
+              </div>
+              <div class="space-y-4">
+                <div class="flex justify-between"><div class="skeleton-text w-44"></div><div class="skeleton-text w-10"></div></div>
+                <div class="skeleton-text skeleton-bar w-full"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -138,16 +140,29 @@ function active($page, $current)
   </section>
 
   <section class="grid-2 section">
-    <div class="card">
-      <div class="card-title">
-        Notice Board
-        <button id="addNoticeBtn" class="btn-primary"><i class="fa-solid fa-plus"></i></button>
+    <div class="card overflow-hidden">
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+            <i class="fa-solid fa-bullhorn text-lg"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-800">Notice Board</h3>
+        </div>
+        <button id="addNoticeBtn" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-indigo-600 hover:text-white transition-all text-slate-500 flex items-center justify-center shadow-sm">
+          <i class="fa-solid fa-plus text-xs"></i>
+        </button>
       </div>
-      <ul class="notice-list" id="noticeList"></ul>
+      <ul class="notice-list space-y-4" id="noticeList"></ul>
     </div>
+
     <div class="card">
-      <div class="card-title">Visit Calendar</div>
-      <div id="calendar" class="calendar"></div>
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+          <i class="fa-solid fa-calendar-days text-lg"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">Visit Calendar</h3>
+      </div>
+      <div id="calendar" class="calendar-premium"></div>
     </div>
   </section>
 </main>

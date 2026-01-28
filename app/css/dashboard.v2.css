@@ -196,7 +196,7 @@ body{font-family: var(--app-font);}
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 100;
+    z-index: 1000; /* Ensure it stays above everything */
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
@@ -204,6 +204,221 @@ body{font-family: var(--app-font);}
     opacity: 1;
     visibility: visible;
     transform: translateX(-50%) translateY(0);
+}
+
+/* PREMIUM NOTICE BOARD */
+.notice-item-modern {
+    background: #f1f5f9; 
+    border-radius: 16px;
+    padding: 16px;
+    border-left: 4px solid #6366f1;
+    transition: all 0.3s ease;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.notice-item-modern:hover {
+    background: #e2e8f0; 
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* PREMIUM CALENDAR */
+.calendar-premium table {
+    width: 100%;
+    border-spacing: 8px;
+    border-collapse: separate;
+}
+
+.calendar-premium th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #64748b; 
+    padding-bottom: 10px;
+    font-weight: 800;
+}
+
+.calendar-premium td {
+    height: 40px; 
+    width: 40px;
+    text-align: center;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #334155; 
+    cursor: default;
+    transition: all 0.2s ease;
+    background: #edf2f7; /* Perfect balanced grey */
+    border: 2px solid transparent;
+}
+
+.calendar-premium td:hover:not(:empty) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+}
+
+.calendar-premium td.event {
+    background: #e0e7ff;
+    color: #4f46e5;
+    position: relative;
+}
+
+.calendar-premium td.event::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 4px;
+    background: #4f46e5;
+    border-radius: 50%;
+}
+
+.calendar-premium td.today {
+    background: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.calendar-premium .cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.calendar-premium .cal-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendar-premium .cal-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+/* --- AI AURA PREMIUM ANIMATION --- */
+/* --- AI AURA PREMIUM ANIMATION (V3 - NEON GRADIENT) --- */
+.ai-aura-container {
+    position: relative;
+    padding: 2px; /* Thinner sophisticated border */
+    border-radius: 2.2rem;
+    z-index: 1;
+    background: transparent;
+}
+
+/* THE NEON BORDER (BEFORE) */
+.ai-aura-container::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    border-radius: 2.2rem;
+    background: linear-gradient(-45deg, #e81cff 0%, #40c9ff 100%);
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* THE NEON GLOW (AFTER) */
+.ai-aura-container::after {
+    content: "";
+    z-index: -1;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(-45deg, #fc00ff 0%, #00dbde 100%);
+    transform: translate3d(0, 0, 0) scale(0.98);
+    filter: blur(20px);
+    opacity: 0.3;
+    border-radius: 2.2rem;
+    animation: aura-glow-pulse 4s ease-in-out infinite alternate;
+}
+
+@keyframes aura-glow-pulse {
+    from { opacity: 0.2; transform: scale(0.96); }
+    to { opacity: 0.4; transform: scale(1.01); }
+}
+
+.ai-aura-inner {
+    position: relative;
+    z-index: 1;
+    background: white;
+    border-radius: 2rem;
+}
+
+/* PURE SOLID PURPLE BORDER FOR DASHBOARD CARDS */
+main.content .card, 
+.grid-2 .card,
+section .card {
+    position: relative !important;
+    background: white !important;
+    border-radius: 24px !important;
+    padding: 24px !important;
+    border: none !important;
+    /* PREMIUM DEPTH SHADOW */
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 10px -2px rgba(0, 0, 0, 0.02) !important;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    z-index: 1;
+}
+
+main.content .card::before, 
+.grid-2 .card::before,
+section .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px; 
+    border-radius: 24px;
+    background: #6b8bff; 
+    -webkit-mask: 
+        linear-gradient(#fff 0 0) content-box, 
+        linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    z-index: -1;
+    opacity: 1;
+}
+
+main.content .card:hover::before,
+.grid-2 .card:hover::before {
+    background: #0837e1; 
+}
+
+/* Ensure AI Inner stays clean */
+.ai-aura-inner {
+    background: white !important;
+    border-radius: 2rem;
+    position: relative;
+    z-index: 5;
+}
+
+.ai-aura-inner .card::before { display: none !important; }
+.ai-aura-inner .card { border: none !important; box-shadow: none !important; padding: 0 !important; }
+
+main.content .card:hover,
+.grid-2 .card:hover {
+    box-shadow: 0 20px 25px -5px rgba(147, 51, 234, 0.1) !important;
+    transform: translateY(-4px) !important;
 }
 
 /* SKELETON LOADING */
