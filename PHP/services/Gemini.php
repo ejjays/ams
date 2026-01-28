@@ -97,8 +97,10 @@ class Gemini {
      * AI Document Insight: Analyzes a document's relevance
      */
     public static function getDocumentInsight($title, $comment) {
+        if (!$title) return "Document title is missing. Please add a title to get AI insights.";
+        
         $prompt = "As an Accreditation Expert, explain in 2 concise sentences the likely importance of a document titled '{$title}' with the description '{$comment}' in a university accreditation process. What specific 'Area' or 'Standard' does it likely support?";
-        return self::ask($prompt);
+        return self::ask($prompt) ?: "AI is currently unable to analyze this specific document. Please ensure the title is descriptive.";
     }
 
     /**
@@ -109,7 +111,7 @@ class Gemini {
         foreach($indicators as $ind) { $indList .= "[ID:{$ind['id']}] {$ind['title']}\n"; }
         
         $prompt = "Given the document title '{$docTitle}', pick the most relevant Indicator ID from this list. Return ONLY the ID number, nothing else:\n" . $indList;
-        $result = trim(self::ask($prompt));
+        $result = trim((string)self::ask($prompt));
         return is_numeric($result) ? (int)$result : null;
     }
 }

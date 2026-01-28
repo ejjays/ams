@@ -175,8 +175,11 @@
                 try {
                     const res = await fetch(`${API}?action=ai_insight&id=${id}`);
                     const json = await res.json();
-                    if (json.ok) alert("🤖 AI INSIGHT:\n\n" + json.data.insight);
-                    else alert("AI Error: " + json.error);
+                    if (json.ok && json.data.insight) {
+                        alert("🤖 AI INSIGHT:\n\n" + json.data.insight);
+                    } else {
+                        alert("🤖 AI INSIGHT:\n\nThe AI is still processing this document or the description is too short to generate a specific insight.");
+                    }
                 } catch (e) {
                     alert("Failed to connect to AI service.");
                 } finally {
