@@ -79,9 +79,13 @@ class AIService {
         $data = [
             "model" => "meta-llama/llama-4-scout-17b-16e-instruct",
             "messages" => [["role" => "user", "content" => $prompt]],
-            "temperature" => 0.2,
-            "response_format" => ["type" => $isJson ? "json_object" : "text"]
+            "temperature" => 0.2
         ];
+        
+        // Use correct Groq format for JSON
+        if ($isJson) {
+            $data["response_format"] = ["type" => "json_object"];
+        }
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -93,11 +97,25 @@ class AIService {
         ]);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $response = curl_exec($ch);
+        $curlErr = curl_error($ch);
         curl_close($ch);
 
-        if (!$response) return "AI Error: Both services failed.";
+        if ($curlErr) {
+            error_log("Groq CURL Error: " . $curlErr);
+            return "AI Error: Groq Connection Failed (" . $curlErr . ")";
+        }
+
+        if (!$response) return "AI Error: Groq returned no response.";
+        
         $json = json_decode($response, true);
-        return $json['choices'][0]['message']['content'] ?? "AI Error: Llama 4 failed to respond.";
+        
+        if (isset($json['error'])) {
+            $msg = $json['error']['message'] ?? 'Unknown Groq Error';
+            error_log("Groq API Error: " . $msg);
+            return "AI Error: Groq says - " . $msg;
+        }
+
+        return $json['choices'][0]['message']['content'] ?? "AI Error: Llama 4 structure mismatch. Raw: " . substr($response, 0, 100);
     }
 
     // --- SHARED LOGIC METHODS ---
