@@ -135,8 +135,8 @@ if ($method === 'GET' && $action === 'list') {
             $params = [':uid' => $userId, ':current_user_id' => $userId];
 
             if ($q !== '') {
-                $sql .= " AND (d.title LIKE :q OR d.comment LIKE :q OR d.original_name LIKE :q)";
-                $params[':q'] = "%$q%";
+                $sql .= " AND (d.title LIKE :q1 OR d.comment LIKE :q2 OR d.original_name LIKE :q3)";
+                $params[':q1'] = $params[':q2'] = $params[':q3'] = "%$q%";
             }
             $sql .= " ORDER BY d.created_at DESC";
 
@@ -159,8 +159,8 @@ if ($method === 'GET' && $action === 'list') {
             $params = [':uid' => $userId, ':current_user_id' => $userId];
 
             if ($q !== '') {
-                $sql .= " AND (d.title LIKE :q OR d.comment LIKE :q OR d.original_name LIKE :q)";
-                $params[':q'] = "%$q%";
+                $sql .= " AND (d.title LIKE :q1 OR d.comment LIKE :q2 OR d.original_name LIKE :q3)";
+                $params[':q1'] = $params[':q2'] = $params[':q3'] = "%$q%";
             }
             $sql .= " ORDER BY d.created_at DESC";
 
