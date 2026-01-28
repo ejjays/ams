@@ -51,7 +51,7 @@
         const cmt = esc(d.comment || '');
         const ext = esc((d.file_ext || '').toUpperCase());
         const owner = d.owner ? `<div class="text-xs text-slate-500 mt-1">by ${esc(d.owner)}</div>` : '';
-        const aiTag = d.ai_tag ? `<div class="mt-3"><span class="ai-tag-glow text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white px-3 py-1 rounded-md inline-flex items-center shadow-lg shadow-indigo-200"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> ${esc(d.ai_tag)}</span></div>` : '';
+        const aiTag = d.ai_tag ? `<div class="mb-3"><span class="ai-tag-glow text-[9px] font-black uppercase tracking-widest bg-gradient-to-r from-indigo-600 to-violet-500 text-white px-4 py-1.5 rounded-full inline-flex items-center shadow-lg shadow-indigo-100"><i class="fa-solid fa-tag mr-2 text-[8px]"></i> ${esc(d.ai_tag)}</span></div>` : '';
 
         // Get rating data
         const ratingLine = (d.avg_rating || d.my_review_rating)
@@ -69,15 +69,15 @@
     <div class="bg-white rounded-2xl shadow-md p-6 flex flex-col gap-4 min-h-[140px]">
       <div class="flex items-start justify-between">
         <div>
+          ${aiTag}
           <div class="font-semibold text-lg text-slate-800">${title}</div>
           ${cmt ? `<div class="text-sm text-slate-500">${cmt}</div>` : ''}
           ${owner}
-          ${aiTag}
           ${ratingLine}
         </div>
         ${extBadge(ext)}
       </div>
-      <div class="flex items-center gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap mt-auto">
         <a class="p-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-slate-700" title="Download" href="${API}?action=download&id=${d.id}">
           <i class="fa-solid fa-download"></i>
         </a>

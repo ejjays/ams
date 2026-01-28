@@ -139,7 +139,7 @@ class AIService {
         if (!$title) return ["insight" => "Title missing.", "model" => "None"];
         $prompt = "Accreditation Expert Analysis:\nTITLE: {$title}\nDESC: {$comment}\n";
         if ($content) $prompt .= "CONTENT: " . substr($content, 0, 1500);
-        $prompt .= "\nExplain importance in 2 concise sentences.";
+        $prompt .= "\nExplain importance in 2 concise sentences. Respond with ONLY the direct analysis. Do NOT say 'Here is the analysis' or 'Here are 2 sentences'.";
         
         $result = self::ask($prompt);
         return [
@@ -149,13 +149,27 @@ class AIService {
     }
 
     public static function suggestIndicator($docTitle, $indicators) {
+        if (empty($indicators)) return null;
         $indList = "";
         foreach($indicators as $ind) { $indList .= "[ID:{$ind['id']}] {$ind['title']}\n"; }
-        $prompt = "Match document '{$docTitle}' to an Indicator ID from this list. Return ONLY the ID number:\n" . $indList;
+        
+        $prompt = "You are an Accreditation Specialist. Categorize this document into the BEST matching category ID.\n\n"
+                . "DOCUMENT TITLE: '{$docTitle}'\n"
+                . "CATEGORIES:\n{$indList}\n\n"
+                . "RULES:\n"
+                . "1. Analyze the MEANING. (e.g., 'Goals', 'Aspirations', 'Future' usually match 'Vision').\n"
+                . "2. Respond with ONLY the ID number.\n"
+                . "3. If absolutely no match is found, respond with '0'.";
         
         $result = self::ask($prompt);
         $text = trim((string)$result['text']);
         
-        return is_numeric($text) ? (int)$text : null;
+        // Robust ID Extraction (handles "ID: 17", "17.", etc.)
+        if (preg_match('/(\d+)/', $text, $matches)) {
+            $id = (int)$matches[1];
+            return $id > 0 ? $id : null;
+        }
+        
+        return null;
     }
 }

@@ -5,7 +5,7 @@
 require __DIR__ . '/auth_guard.php'; // requires $_SESSION['user_id']
 require __DIR__ . '/db.php'; // $pdo
 
-ini_set('display_errors', '1');
+ini_set('display_errors', '0');
 error_reporting(E_ALL);
 
 header('Content-Type: application/json; charset=utf-8');
@@ -185,10 +185,10 @@ if ($method === 'GET' && $action === 'download') {
         SELECT d.* FROM documents d
         LEFT JOIN document_shares s ON s.document_id = d.id
         WHERE d.id = :id 
-          AND (d.owner_user_id = :uid OR s.user_id = :uid)
+          AND (d.owner_user_id = :uid1 OR s.user_id = :uid2)
         LIMIT 1
     ");
-    $stmt->execute([':id' => $id, ':uid' => $userId]);
+    $stmt->execute([':id' => $id, ':uid1' => $userId, ':uid2' => $userId]);
     $doc = $stmt->fetch();
 
     if (!$doc) jexit(false, null, 'Not found or access denied.');

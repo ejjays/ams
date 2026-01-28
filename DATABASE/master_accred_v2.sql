@@ -1029,7 +1029,7 @@ COMMIT;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 -- ========================================================
--- AI & SECURITY PATCH (APPENDED BY GEMINI)
+-- AI & SECURITY PATCH (MISSING)
 -- ========================================================
 
 -- 1. Fix Users table for security lockout
@@ -1069,3 +1069,24 @@ CREATE TABLE IF NOT EXISTS `document_delete_history` (
   `deleted_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+
+-- 6. Create missing Document Reviews table (for Stars/Comments)
+CREATE TABLE IF NOT EXISTS `document_reviews` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `document_id` INT UNSIGNED NOT NULL,
+  `user_id` INT UNSIGNED NOT NULL,
+  `rating` INT NOT NULL,
+  `comment` TEXT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY `uq_doc_user_review` (`document_id`, `user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 7. Ensure AI Tagging Table exists
+CREATE TABLE IF NOT EXISTS `indicator_document_links` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `indicator_id` INT UNSIGNED NOT NULL,
+  `document_id` INT UNSIGNED NOT NULL,
+  `uploaded_by` INT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
