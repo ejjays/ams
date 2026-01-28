@@ -59,44 +59,6 @@ function active($page, $current)
     </div>
   </section>
 
-  <!-- AI Driven Analytics Section -->
-  <section class="section">
-    <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-12">
-        <!-- AI Narrative Column -->
-        <div class="lg:col-span-5 bg-slate-50 p-8 lg:p-10 border-r border-gray-100">
-          <div class="flex items-center gap-3 mb-8">
-            <div class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></div>
-            <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">AI Intelligence Report</span>
-          </div>
-          
-          <div class="mb-8">
-            <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Executive Summary</h4>
-            <div id="aiSummary" class="text-slate-700 font-medium leading-relaxed">
-              <!-- Summary types here -->
-            </div>
-          </div>
-
-          <div>
-            <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Strategic Action</h4>
-            <div id="aiAction" class="text-slate-600 text-sm italic border-l-2 border-indigo-200 pl-4">
-              <!-- Action types here -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Program Progress Column -->
-        <div class="lg:col-span-7 p-8 lg:p-10">
-          <div class="flex items-center justify-between mb-8">
-            <h3 class="text-lg font-bold text-slate-900">Program Status</h3>
-            <span class="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Real-time Compliance</span>
-          </div>
-          <div id="aiProgressBars" class="grid grid-cols-1 gap-6"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section class="grid-2 section">
     <div class="card">
       <div class="card-title">Evidence by Program</div>

@@ -32,14 +32,20 @@ class Gemini {
     /**
      * Generic wrapper for Gemini API
      */
-    public static function ask($prompt) {
+    public static function ask($prompt, $isJson = false) {
         self::init();
-        if (!self::$apiKey) return null;
+        if (!self::$apiKey) return "AI Error: API Key not found";
 
-        $url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" . self::$apiKey;
+        $model = 'gemini-2.5-flash';
+        $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key=" . self::$apiKey;
+        
         $data = [
             "contents" => [["parts" => [["text" => $prompt]]]],
-            "generationConfig" => ["temperature" => 0.7, "maxOutputTokens" => 800]
+            "generationConfig" => [
+                "temperature" => 0.2,
+                "maxOutputTokens" => 1000,
+                "responseMimeType" => $isJson ? "application/json" : "text/plain"
+            ]
         ];
 
         $ch = curl_init($url);
@@ -47,30 +53,53 @@ class Gemini {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        
         $response = curl_exec($ch);
-        if (curl_errno($ch)) {
-            error_log("Gemini CURL Error: " . curl_error($ch));
-            return null;
-        }
         curl_close($ch);
 
-        $json = json_decode($response, true);
-        if (isset($json['error'])) {
-            error_log("Gemini API Error: " . json_encode($json['error']));
+        if ($response) {
+            $json = json_decode($response, true);
+            $resText = $json['candidates'][0]['content']['parts'][0]['text'] ?? null;
+            if ($resText) return $resText;
         }
-        
-        return $json['candidates'][0]['content']['parts'][0]['text'] ?? null;
+        return null;
     }
 
     /**
-     * AI Progress Analytics: Generates a summary for the dashboard
+     * AI Progress Analytics: Returns JSON
      */
     public static function getProgressSummary($stats) {
-        $prompt = "As an Accreditation Assistant, summarize this progress for the dashboard in 2-3 concise sentences. Mention specific percentages: ";
+        $prompt = "You are a Senior Accreditation Consultant. Analyze this compliance data: ";
         foreach($stats as $s) {
-            $prompt .= "{$s['program']}: {$s['percentage']}%, ";
+            $prompt .= "{$s['program']} ({$s['percentage']}%), ";
         }
-        return self::ask($prompt) ?: "Progress data updated. Please check compliance details per program.";
+        $prompt .= ". Respond ONLY with a JSON object: {\"summary\": \"2 sentences\", \"action\": \"1 recommendation\"}. No other text.";
+        
+        $response = self::ask($prompt, true);
+        
+        // --- ULTRA ROBUST JSON CLEANER ---
+        if ($response) {
+            // Find the first '{' and last '}'
+            $start = strpos($response, '{');
+            $end = strrpos($response, '}');
+            if ($start !== false && $end !== false) {
+                $response = substr($response, $start, $end - $start + 1);
+            }
+        }
+        
+        return $response ?: json_encode([
+            "summary" => "Institutional compliance metrics are being analyzed.",
+            "action" => "Review program indicators for improvement."
+        ]);
+    }
+
+    /**
+     * AI Document Insight: Analyzes a document's relevance
+     */
+    public static function getDocumentInsight($title, $comment) {
+        $prompt = "As an Accreditation Expert, explain in 2 concise sentences the likely importance of a document titled '{$title}' with the description '{$comment}' in a university accreditation process. What specific 'Area' or 'Standard' does it likely support?";
+        return self::ask($prompt);
     }
 
     /**

@@ -1,0 +1,9 @@
+/* app/css/auth.css */
+.auth-bg{
+  background-image: linear-gradient(rgba(250, 250, 250, 0.937), rgba(8, 52, 117, 0.942)), url('../../IMAGE/img.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+/* small helpers (optional) */
+.pointer-events-auto { pointer-events: auto; }

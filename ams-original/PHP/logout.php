@@ -1,0 +1,19 @@
+<?php
+// PHP/logout.php — end the session and redirect to login
+session_start();
+
+// Clear all session variables
+$_SESSION = [];
+
+// If there's a session cookie, delete it
+if (ini_get('session.use_cookies')) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
+}
+
+// Destroy the session
+session_destroy();
+
+// Redirect back to login with a friendly banner
+header('Location: login.php?ok=loggedout');
+exit;

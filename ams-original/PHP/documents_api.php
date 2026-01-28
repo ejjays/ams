@@ -5,10 +5,8 @@
 require __DIR__ . '/auth_guard.php'; // requires $_SESSION['user_id']
 require __DIR__ . '/db.php'; // $pdo
 
-ini_set('display_errors', '1');
-error_reporting(E_ALL);
-
 header('Content-Type: application/json; charset=utf-8');
+ini_set('display_errors', '0');
 
 // Error Handling Wrappers
 set_error_handler(function ($no, $str) {
@@ -112,66 +110,61 @@ $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 // ---------- LIST ----------
 if ($method === 'GET' && $action === 'list') {
-    try {
-        $tab = ($_GET['tab'] ?? 'mine') === 'shared' ? 'shared' : 'mine';
-        $q   = trim($_GET['q'] ?? '');
+    $tab = ($_GET['tab'] ?? 'mine') === 'shared' ? 'shared' : 'mine';
+    $q   = trim($_GET['q'] ?? '');
 
-        // Subquery para sa ratings
-        $ratingsSubQuery = "
-            (SELECT AVG(r.rating) FROM document_reviews r WHERE r.document_id = d.id) AS avg_rating,
-            (SELECT r2.rating FROM document_reviews r2 WHERE r2.document_id = d.id AND r2.user_id = :current_user_id) AS my_review_rating,
-            (SELECT il.title FROM indicator_document_links idl JOIN indicator_labels il ON il.id = idl.indicator_id WHERE idl.document_id = d.id LIMIT 1) AS ai_tag
+    // Subquery para sa ratings
+    $ratingsSubQuery = "
+        (SELECT AVG(r.rating) FROM document_reviews r WHERE r.document_id = d.id) AS avg_rating,
+        (SELECT r2.rating FROM document_reviews r2 WHERE r2.document_id = d.id AND r2.user_id = :current_user_id) AS my_review_rating
+    ";
+
+    if ($tab === 'mine') {
+        // OWNED DOCUMENTS
+        $sql = "
+            SELECT d.id, d.title, d.comment, d.original_name, d.stored_name, d.file_ext,
+                   d.mime_type, d.file_size, d.created_at, $ratingsSubQuery
+            FROM documents d
+            WHERE d.owner_user_id = :uid
+              AND d.archived_at IS NULL
         ";
+        $params = [':uid' => $userId, ':current_user_id' => $userId];
 
-        if ($tab === 'mine') {
-            // OWNED DOCUMENTS
-            $sql = "
-                SELECT d.id, d.title, d.comment, d.original_name, d.stored_name, d.file_ext,
-                       d.mime_type, d.file_size, d.created_at, $ratingsSubQuery
-                FROM documents d
-                WHERE d.owner_user_id = :uid
-                  AND d.archived_at IS NULL
-            ";
-            $params = [':uid' => $userId, ':current_user_id' => $userId];
-
-            if ($q !== '') {
-                $sql .= " AND (d.title LIKE :q OR d.comment LIKE :q OR d.original_name LIKE :q)";
-                $params[':q'] = "%$q%";
-            }
-            $sql .= " ORDER BY d.created_at DESC";
-
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            $rows = $stmt->fetchAll();
-            jexit(true, $rows);
-        } else {
-            // SHARED WITH ME
-            $sql = "
-                SELECT d.id, d.title, d.comment, d.original_name, d.stored_name, d.file_ext,
-                       d.mime_type, d.file_size, d.created_at,
-                       u.first_name, u.last_name, $ratingsSubQuery
-                FROM document_shares s
-                JOIN documents d ON d.id = s.document_id
-                JOIN users u ON u.id = d.owner_user_id
-                WHERE s.user_id = :uid
-                  AND d.archived_at IS NULL
-            ";
-            $params = [':uid' => $userId, ':current_user_id' => $userId];
-
-            if ($q !== '') {
-                $sql .= " AND (d.title LIKE :q OR d.comment LIKE :q OR d.original_name LIKE :q)";
-                $params[':q'] = "%$q%";
-            }
-            $sql .= " ORDER BY d.created_at DESC";
-
-            $stmt = $pdo->prepare($sql);
-            $stmt->execute($params);
-            $rows = $stmt->fetchAll();
-            foreach ($rows as &$r) $r['owner'] = fullOwnerName($r);
-            jexit(true, $rows);
+        if ($q !== '') {
+            $sql .= " AND (d.title LIKE :q OR d.comment LIKE :q OR d.original_name LIKE :q)";
+            $params[':q'] = "%$q%";
         }
-    } catch (Throwable $e) {
-        jexit(false, null, "Database Error: " . $e->getMessage());
+        $sql .= " ORDER BY d.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+        jexit(true, $rows);
+    } else {
+        // SHARED WITH ME
+        $sql = "
+            SELECT d.id, d.title, d.comment, d.original_name, d.stored_name, d.file_ext,
+                   d.mime_type, d.file_size, d.created_at,
+                   u.first_name, u.last_name, $ratingsSubQuery
+            FROM document_shares s
+            JOIN documents d ON d.id = s.document_id
+            JOIN users u ON u.id = d.owner_user_id
+            WHERE s.user_id = :uid
+              AND d.archived_at IS NULL
+        ";
+        $params = [':uid' => $userId, ':current_user_id' => $userId];
+
+        if ($q !== '') {
+            $sql .= " AND (d.title LIKE :q OR d.comment LIKE :q OR d.original_name LIKE :q)";
+            $params[':q'] = "%$q%";
+        }
+        $sql .= " ORDER BY d.created_at DESC";
+
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
+        $rows = $stmt->fetchAll();
+        foreach ($rows as &$r) $r['owner'] = fullOwnerName($r);
+        jexit(true, $rows);
     }
 }
 
@@ -266,22 +259,7 @@ if ($method === 'POST' && $action === 'save') {
             ':m' => $mime,
             ':z' => $size
         ]);
-        $id = (int)$pdo->lastInsertId();
-        
-        // --- START: AI AUTO-TAGGING ---
-        try {
-            require_once __DIR__ . '/services/Gemini.php';
-            $indicators = $pdo->query("SELECT id, title FROM indicator_labels LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
-            $suggestedId = Gemini::suggestIndicator($title, $indicators);
-            
-            if ($suggestedId) {
-                $pdo->prepare("INSERT IGNORE INTO indicator_document_links (indicator_id, document_id, uploaded_by) VALUES (?, ?, ?)")
-                    ->execute([$suggestedId, $id, $userId]);
-            }
-        } catch (Throwable $aiErr) { error_log("AI Tagging Error: " . $aiErr->getMessage()); }
-        // --- END: AI AUTO-TAGGING ---
-
-        jexit(true, ['id' => $id]);
+        jexit(true, ['id' => $pdo->lastInsertId()]);
     } else {
         if ($fileProvided) {
             $stmt = $pdo->prepare("
@@ -422,23 +400,6 @@ if ($method === 'POST' && $action === 'review') {
     ]);
 
     jexit(true, ['reviewed' => true]);
-}
-
-// ---------- AI INSIGHT (ON DEMAND) ----------
-if ($method === 'GET' && $action === 'ai_insight') {
-    $id = (int)($_GET['id'] ?? 0);
-    if ($id <= 0) jexit(false, null, 'Missing id.');
-
-    $stmt = $pdo->prepare("SELECT title, comment FROM documents WHERE id = :id LIMIT 1");
-    $stmt->execute([':id' => $id]);
-    $doc = $stmt->fetch();
-
-    if (!$doc) jexit(false, null, 'Document not found.');
-
-    require_once __DIR__ . '/services/Gemini.php';
-    $insight = Gemini::getDocumentInsight($doc['title'], $doc['comment']);
-
-    jexit(true, ['insight' => $insight]);
 }
 
 // ---------- Fallback ----------

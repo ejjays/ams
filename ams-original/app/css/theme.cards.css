@@ -1,0 +1,204 @@
+/* Harmonized card tints for hierarchy on Section screens */
+:root{
+  --card-h1: #ffffff; --card-h2: #ffffff; --card-h3: #ffffff; /* blue-50 */
+  --card-h1: #ffffff; --card-h2: #ffffff; --card-h3: #ffffff; /* slate-50 */
+  --card-h1: #ffffff; --card-h2: #ffffff; --card-h3: #ffffff; /* sky-50 */
+}
+/* Fallback utility classes if needed */
+.card-h1{ background: var(--card-h1) !important; }
+.card-h2{ background: var(--card-h2) !important; }
+.card-h3{ background: var(--card-h3) !important; }
+
+
+/* Hierarchy tints:
+   Section  -> white
+   Parameter -> blue-100
+   Parameter Label -> blue-50
+   Indicator Label -> gray-50
+*/
+
+
+
+
+/* --- Open-state highlights for Section page (blue theme) --- */
+#sectionList .is-open { 
+  /* default is white via markup; when open, tint blue */
+  background: rgba(37,99,235,.10);   /* ~blue-600 @ 10% */
+  border-color: rgba(37,99,235,.35);
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  transition: background-color .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+/* Prefer --brand if defined */
+:root { --section-open-bg: rgba(37,99,235,.10); --section-open-border: rgba(37,99,235,.35); }
+#sectionList .is-open { background: var(--section-open-bg); border-color: var(--section-open-border); }
+
+#sectionList details[open] > summary {
+  background: var(--section-open-bg);
+  transition: background-color .2s ease;
+  border-radius: 0.5rem;
+}
+
+/* optional: nested levels */
+#sectionList details[open] { border-left-color: var(--section-open-border); }
+
+
+
+/* --- Larger Indicator Label cards --- */
+/* Label header (the accordion summary for a Parameter Label) */
+#sectionList [data-label-id] > summary {
+  padding: 14px 16px;          /* ~py-3.5 px-4 */
+  min-height: 56px;
+  font-size: 1rem;             /* 16px */
+  border-radius: 0.5rem;
+}
+
+/* Indicator items inside a Label */
+#sectionList li[data-indicator-id] {
+  padding: 14px 16px;          /* bigger tap target */
+  min-height: 56px;
+}
+#sectionList li[data-indicator-id] .font-medium {
+  font-size: 1rem;             /* title a bit larger */
+  line-height: 1.4;
+}
+#sectionList li[data-indicator-id] .text-sm {
+  font-size: 0.95rem;          /* evidence text slightly larger */
+}
+
+
+/* --- Even larger Indicator Label cards (v2) --- */
+#sectionList [data-label-id] > summary {
+  padding: 18px 20px;          /* bigger touch target */
+  min-height: 64px;
+  font-size: 1.0625rem;        /* ~17px */
+  line-height: 1.45;
+  border-radius: 0.75rem;      /* rounder look */
+}
+#sectionList [data-label-id] > summary button {
+  min-width: 2.25rem;          /* 36px */
+  min-height: 2.25rem;
+  font-size: 1rem;
+}
+
+#sectionList li[data-indicator-id] {
+  padding: 18px 20px;
+  min-height: 64px;
+}
+#sectionList li[data-indicator-id] .font-medium {
+  font-size: 1.0625rem;        /* title bigger */
+  line-height: 1.45;
+}
+#sectionList li[data-indicator-id] .text-sm {
+  font-size: 1rem;             /* evidence text bigger */
+}
+
+
+/* --- Grow card size only; keep fonts the same --- */
+#sectionList [data-label-id] > summary {
+  padding: 20px 22px;          /* bigger box */
+  min-height: 68px;
+  font-size: inherit;          /* do NOT change font size */
+}
+#sectionList [data-label-id] > summary .font-medium { font-size: inherit; }
+#sectionList [data-label-id] > summary .text-sm { font-size: .875rem; }
+
+#sectionList li[data-indicator-id] {
+  padding: 20px 22px;          /* bigger box */
+  min-height: 68px;
+}
+#sectionList li[data-indicator-id] .font-medium { font-size: inherit; }
+#sectionList li[data-indicator-id] .text-sm { font-size: .875rem; }  /* restore small text */
+
+
+/* --- Uniform font size for Label headers and Indicator items --- */
+#sectionList [data-label-id] > summary,
+#sectionList li[data-indicator-id] {
+  font-size: 0.95rem;          /* unified size */
+}
+
+/* Make inner elements inherit this size so lahat pare-pareho */
+#sectionList [data-label-id] > summary .font-medium,
+#sectionList [data-label-id] > summary .text-sm,
+#sectionList li[data-indicator-id] .font-medium,
+#sectionList li[data-indicator-id] .text-sm {
+  font-size: inherit !important;
+}
+
+
+/* --- Make Parameter Label (summary) smaller; keep Indicator cards large --- */
+#sectionList [data-label-id] > summary {
+  padding: 12px 14px;      /* smaller than indicator rows */
+  min-height: 48px;        /* reduced height */
+  font-size: inherit;      /* keep font same as others */
+  border-radius: 0.5rem;
+}
+/* indicator rows remain big from previous rules */
+
+
+/* --- Parameter Label box: smaller v2 --- */
+#sectionList [data-label-id] > summary {
+  padding: 8px 12px;     /* tighter */
+  min-height: 40px;      /* shorter */
+  font-size: inherit;    /* keep consistent text size */
+}
+
+/* optional: tighten inner spacing of buttons inside the label header */
+#sectionList [data-label-id] > summary .flex.items-center.gap-1 { gap: 0.25rem; }
+#sectionList [data-label-id] > summary button { min-width: 2rem; min-height: 2rem; }  /* 32px hit area */
+
+
+/* Force plain white cards */
+#sectionList details > summary,
+#sectionList [data-parameter-id],
+#sectionList [data-label-id],
+
+
+
+/* Neutral borders and no blue glow */
+#sectionList .rounded.border { border-color: #e5e7eb !important; } /* gray-200 */
+#sectionList [class*="shadow"] { box-shadow: none !important; }
+
+/* Uniform compact icon buttons in Parameter & Label headers */
+#sectionList summary button {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  padding: 0 !important;
+}
+#sectionList summary button i,
+#sectionList summary i.fa-solid {
+  font-size: 14px !important;
+  line-height: 1 !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+
+/* Specific chevron override (ignore any w-4 h-4 utility classes) */
+#sectionList summary i.fa-chevron-down { width: 14px !important; height: 14px !important; }
+
+
+/* Make Indicator rows light gray */
+#sectionList li[data-indicator-id] {
+  background: #f8fafc !important; /* slate-50 */
+}
+
+
+/* Spacing between cards/boxes */
+#sectionList details + details { margin-top: 0.5rem; } /* gap between Parameter or Label items */
+#sectionList [data-parameter-id] > summary { margin-bottom: 0.5rem; }
+#sectionList [data-label-id] > summary { margin-bottom: 0.5rem; }
+#sectionList li[data-indicator-id] + li[data-indicator-id] { margin-top: 0.5rem; }
+
+
+/* Separator lines between sibling cards (Parameters, Labels, Indicators) */
+#sectionList div.rounded.border.bg-white > details + details { 
+  border-top: 1px solid #e5e7eb; /* gray-200 */
+}
+#sectionList ul.rounded.border.bg-white > li + li { 
+  border-top: 1px solid #e5e7eb; /* gray-200 */
+}
+
+/* Keep some breathing room along with the separator */
+#sectionList div.rounded.border.bg-white > details { padding-top: .25rem; padding-bottom: .25rem; }
+#sectionList ul.rounded.border.bg-white > li { padding-top: .25rem; padding-bottom: .25rem; }

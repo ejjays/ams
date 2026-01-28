@@ -214,63 +214,7 @@ if ($action === 'summary') {
     $events = [['date' => date('Y-m-') . '05', 'title' => 'Planning'], ['date' => date('Y-m-') . '12', 'title' => 'Submission'], ['date' => date('Y-m-') . '20', 'title' => 'Review']];
   }
 
-  respond(true, [
-    'totals' => $totals,
-    'donut' => $donut,
-    'attendance' => $attendance,
-    'notices' => $notices,
-    'events' => $events,
-    'ai_analytics' => get_ai_analytics($pdo)
-  ]);
-}
-
-/**
- * AI-Driven Progress Analytics
- * Calculates compliance and generates a Gemini summary.
- */
-function get_ai_analytics($pdo) {
-    require_once __DIR__ . '/services/Gemini.php';
-    
-    try {
-        // 1. Calculate Progress
-        $sql = "
-            SELECT 
-                p.name as program,
-                (SELECT COUNT(*) FROM indicator_labels) as total_required,
-                COUNT(DISTINCT l.indicator_id) as uploaded_count
-            FROM programs p
-            LEFT JOIN level_programs lp ON lp.program_id = p.id
-            LEFT JOIN sections s ON s.level_id = lp.level_id
-            LEFT JOIN parameters par ON par.section_id = s.id
-            LEFT JOIN parameter_labels pl ON pl.parameter_id = par.id
-            LEFT JOIN indicator_labels il ON il.parameter_label_id = pl.id
-            LEFT JOIN indicator_document_links l ON l.indicator_id = il.id
-            GROUP BY p.id
-        ";
-        $stmt = $pdo->query($sql);
-        $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Filter out 'sample' data
-        $stats = array_values(array_filter($stats, function($s) {
-            return strpos(strtolower($s['program']), 'sample') === false;
-        }));
-
-        $prompt = "You are a Senior University Accreditation Consultant. Analyze this compliance data: ";
-        foreach($stats as &$s) {
-            $s['percentage'] = $s['total_required'] > 0 ? round(($s['uploaded_count'] / $s['total_required']) * 100) : 0;
-        }
-        unset($s);
-
-        // 2. Get AI Summary from Service
-        $summary = Gemini::getProgressSummary($stats);
-
-        return [
-            'stats' => $stats,
-            'summary' => $summary
-        ];
-    } catch (Throwable $e) {
-        return ['stats' => [], 'summary' => 'AI Analytics temporarily unavailable.'];
-    }
+  respond(true, ['totals' => $totals, 'donut' => $donut, 'attendance' => $attendance, 'notices' => $notices, 'events' => $events]);
 }
 
 $facilities = table_exists($pdo, 'facilities') ? safe_count($pdo, 'facilities') : 0;

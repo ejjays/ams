@@ -51,7 +51,6 @@
         const cmt = esc(d.comment || '');
         const ext = esc((d.file_ext || '').toUpperCase());
         const owner = d.owner ? `<div class="text-xs text-slate-500 mt-1">by ${esc(d.owner)}</div>` : '';
-        const aiTag = d.ai_tag ? `<div class="mt-3"><span class="ai-tag-glow text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white px-3 py-1 rounded-md inline-flex items-center shadow-lg shadow-indigo-200"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> ${esc(d.ai_tag)}</span></div>` : '';
 
         // Get rating data
         const ratingLine = (d.avg_rating || d.my_review_rating)
@@ -62,8 +61,7 @@
         const controls = `
           <button class="p-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-slate-700" title="Edit" data-edit='${JSON.stringify(d)}'><i class="fa-solid fa-pen"></i></button>
           <button class="p-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-slate-700" title="Share" data-share="${d.id}"><i class="fa-solid fa-share-nodes"></i></button>
-          <button class="p-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-slate-700" title="Review" data-review="${d.id}" data-stored-name="${esc(d.stored_name)}" data-file-ext="${esc(d.file_ext)}"><i class="fa-solid fa-star"></i></button>
-          <button class="p-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm" title="AI Insight" data-ai-insight="${d.id}"><i class="fa-solid fa-wand-magic-sparkles"></i></button>`;
+          <button class="p-3 rounded-lg bg-gray-200 hover:bg-gray-300 text-slate-700" title="Review" data-review="${d.id}" data-stored-name="${esc(d.stored_name)}" data-file-ext="${esc(d.file_ext)}"><i class="fa-solid fa-star"></i></button>`;
 
         return `
     <div class="bg-white rounded-2xl shadow-md p-6 flex flex-col gap-4 min-h-[140px]">
@@ -72,7 +70,6 @@
           <div class="font-semibold text-lg text-slate-800">${title}</div>
           ${cmt ? `<div class="text-sm text-slate-500">${cmt}</div>` : ''}
           ${owner}
-          ${aiTag}
           ${ratingLine}
         </div>
         ${extBadge(ext)}
@@ -163,26 +160,6 @@
                 reviewPreviewWrap.classList.add('hidden');
 
                 open(reviewModal);
-            });
-        });
-
-        // AI Insight
-        docList.querySelectorAll('[data-ai-insight]').forEach(btn => {
-            btn.addEventListener('click', async () => {
-                const id = btn.getAttribute('data-ai-insight');
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-                try {
-                    const res = await fetch(`${API}?action=ai_insight&id=${id}`);
-                    const json = await res.json();
-                    if (json.ok) alert("🤖 AI INSIGHT:\n\n" + json.data.insight);
-                    else alert("AI Error: " + json.error);
-                } catch (e) {
-                    alert("Failed to connect to AI service.");
-                } finally {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
-                }
             });
         });
 

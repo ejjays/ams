@@ -1,0 +1,30 @@
+# Force correct MIME types for JS, CSS, etc.
+
+AddType application/javascript .js
+AddType application/javascript .mjs
+AddType text/css .css
+AddType application/json .json
+AddType font/woff2 .woff2
+AddType font/woff .woff
+
+<IfModule mod_rewrite.c>
+    Options +FollowSymLinks
+    RewriteEngine On
+
+    # 1) Root "/" should render the SMS landing page
+    RewriteRule ^$ PHP/sms.php [L]
+
+    # 2) If the request is already for /PHP, do nothing
+    RewriteCond %{REQUEST_URI} ^/PHP/ [OR]
+    RewriteCond %{REQUEST_URI} ^/PHP$
+    RewriteRule ^ - [L]
+
+    # 3) If the requested file or folder exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # 4) Otherwise, pass-through to /PHP/<path>
+    RewriteRule ^(.+)$ PHP/$1 [L]
+
+</IfModule>

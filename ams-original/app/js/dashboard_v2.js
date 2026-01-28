@@ -5,72 +5,11 @@
     const r = await fetch('dashboard_api.php?action=summary', {credentials:'same-origin'});
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'Failed');
-    const { totals, donut, attendance, notices, events, ai_analytics } = j.data;
+    const { totals, donut, attendance, notices, events } = j.data;
     setText('kpiPrograms', totals.programs ?? '0');
     setText('kpiVisits', totals.visits ?? '0');
     setText('kpiUsers', totals.users ?? '0');
     setText('kpiDocuments', totals.documents ?? '0');
-
-    // Render AI Analytics
-    if (ai_analytics) {
-      const summaryEl = document.getElementById('aiSummary');
-      const actionEl = document.getElementById('aiAction');
-      
-      let aiData;
-      try {
-        aiData = JSON.parse(ai_analytics.summary);
-      } catch (e) {
-        aiData = { 
-          summary: "Processing institutional compliance metrics...", 
-          action: "Review lagging indicators for immediate improvement." 
-        };
-      }
-
-      // Typing Effect Helper
-      const typeText = (el, text, speed, callback) => {
-        let i = 0;
-        el.innerHTML = '';
-        el.classList.add('typing-cursor');
-        const interval = setInterval(() => {
-          if (i < text.length) {
-            el.innerHTML += text.charAt(i);
-            i++;
-          } else {
-            clearInterval(interval);
-            el.classList.remove('typing-cursor');
-            if (callback) callback();
-          }
-        }, speed);
-      };
-
-      // Execute sequence
-      typeText(summaryEl, aiData.summary || '', 10, () => {
-        typeText(actionEl, aiData.action || '', 8);
-      });
-
-      const progContainer = document.getElementById('aiProgressBars');
-      if (progContainer) {
-        progContainer.innerHTML = (ai_analytics.stats || [])
-          .filter(s => !s.program.toLowerCase().includes('sample')) // Hide all samples
-          .map(s => {
-            const p = s.percentage || 0;
-            return `
-              <div class="ai-progress-item flex items-center gap-6">
-                <div class="flex-1">
-                  <div class="flex justify-between items-center mb-2">
-                    <span class="text-sm font-bold text-slate-700">${s.program}</span>
-                    <span class="text-[10px] font-black tracking-widest text-indigo-600">${p}% COMPLETE</span>
-                  </div>
-                  <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-in-out" style="width: ${p}%"></div>
-                  </div>
-                </div>
-              </div>
-            `;
-          }).join('');
-      }
-    }
-
     if (window.Chart){
       
     
