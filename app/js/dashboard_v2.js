@@ -65,7 +65,7 @@
         
         const ai_analytics = aiJson.data;
         if (ai_analytics.summary) {
-          console.log('🤖 AI: Summary received successfully.');
+          console.log(`🤖 AI: Summary received via ${ai_analytics.model || 'Unknown Model'}`);
           if (ai_analytics.summary.includes('AI Error:') || ai_analytics.summary.includes('API Error:')) {
             console.error('🤖 AI Error Detected:', ai_analytics.summary);
           }

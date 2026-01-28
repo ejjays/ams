@@ -29,20 +29,22 @@ class AIService {
 
     /**
      * The Master Ask Method with Fallback
+     * Returns ['text' => string, 'model' => string]
      */
     public static function ask($prompt, $isJson = false) {
         self::init();
 
         // 1. TRY GEMINI FIRST
         $res = self::callGemini($prompt, $isJson);
-        
-        // 2. IF GEMINI FAILS (Rate limit or error), FALLBACK TO GROQ
-        if (!$res || strpos($res, 'AI Error:') === 0 || strpos($res, 'API Error:') === 0) {
-            error_log("🤖 AI: Gemini failed or limited. Falling back to Llama 4 (Groq)...");
-            return self::callGroq($prompt, $isJson);
+        if ($res && strpos($res, 'AI Error:') !== 0 && strpos($res, 'API Error:') !== 0) {
+            return ['text' => $res, 'model' => 'Google Gemini 2.5 Flash'];
         }
-
-        return $res;
+        
+        // 2. IF GEMINI FAILS, FALLBACK TO GROQ
+        error_log("🤖 AI: Gemini failed or limited. Falling back to Llama 4 (Groq)...");
+        $res = self::callGroq($prompt, $isJson);
+        
+        return ['text' => $res, 'model' => 'Meta Llama 4 (Groq)'];
     }
 
     private static function callGemini($prompt, $isJson) {
@@ -127,28 +129,43 @@ class AIService {
         }
         $prompt .= ". Respond ONLY with a JSON object: {\"summary\": \"2 sentences\", \"action\": \"1 recommendation\"}. No other text.";
         
-        $response = self::ask($prompt, true);
+        $result = self::ask($prompt, true);
+        $response = $result['text'];
+        
+        // --- ULTRA ROBUST JSON CLEANER ---
         if ($response) {
             $start = strpos($response, '{');
             $end = strrpos($response, '}');
             if ($start !== false && $end !== false) $response = substr($response, $start, $end - $start + 1);
         }
-        return $response ?: json_encode(["summary" => "Metrics analyzed.", "action" => "Review indicators."]);
+        
+        return [
+            'summary' => $response ?: json_encode(["summary" => "Metrics analyzed.", "action" => "Review indicators."]),
+            'model' => $result['model']
+        ];
     }
 
     public static function getDocumentInsight($title, $comment, $content = null) {
-        if (!$title) return "Title missing.";
+        if (!$title) return ["insight" => "Title missing.", "model" => "None"];
         $prompt = "Accreditation Expert Analysis:\nTITLE: {$title}\nDESC: {$comment}\n";
         if ($content) $prompt .= "CONTENT: " . substr($content, 0, 1500);
         $prompt .= "\nExplain importance in 2 concise sentences.";
-        return self::ask($prompt);
+        
+        $result = self::ask($prompt);
+        return [
+            "insight" => $result['text'] ?: "AI is currently unable to analyze this document.",
+            "model" => $result['model']
+        ];
     }
 
     public static function suggestIndicator($docTitle, $indicators) {
         $indList = "";
         foreach($indicators as $ind) { $indList .= "[ID:{$ind['id']}] {$ind['title']}\n"; }
         $prompt = "Match document '{$docTitle}' to an Indicator ID from this list. Return ONLY the ID number:\n" . $indList;
-        $result = trim((string)self::ask($prompt));
-        return is_numeric($result) ? (int)$result : null;
+        
+        $result = self::ask($prompt);
+        $text = trim((string)$result['text']);
+        
+        return is_numeric($text) ? (int)$text : null;
     }
 }

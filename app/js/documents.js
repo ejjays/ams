@@ -212,6 +212,7 @@
                     const json = await res.json();
                     
                     if (json.ok && json.data.insight) {
+                        console.log(`🤖 AI: Insight received via ${json.data.model || 'Unknown Model'}`);
                         if (json.data.insight.startsWith('AI Error:') || json.data.insight.startsWith('Connection Error:')) {
                             console.error('🤖 AI Error (Gemini):', json.data.insight);
                         }
