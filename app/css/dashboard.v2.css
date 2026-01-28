@@ -1,0 +1,125 @@
+/* injected global font override */
+:root{--app-font: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, Noto Sans, 'Apple Color Emoji','Segoe UI Emoji';}
+body{font-family: var(--app-font);} 
+/* app/css/dashboard.v2.css */
+:root{--bg:#f4f6fb; --card:#fff; --muted:#667085; --ink:#0f172a; --brand:#2563eb;}
+*{box-sizing:border-box} body{color:var(--ink)}
+.content{padding:24px}
+.kpi-row{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:16px}
+.kpi-card{background:var(--card); border-radius:16px; display:flex; gap:12px; padding:16px; align-items:center; box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.kpi-icon{width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:#eef2ff; color:#4338ca}
+.kpi-title{font-size:12px; color:var(--muted)} .kpi-value{font-size:24px; font-weight:700}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px}
+.card{background:var(--card); border-radius:16px; padding:16px; box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.card-title{display:flex; align-items:center; justify-content:space-between; font-weight:600; margin-bottom:10px}
+.card-sub{font-size:12px; font-weight:400; color:var(--muted); margin-left:8px}
+.donut-wrap{position:relative; width:100%; max-width:360px; margin:auto}
+.donut-center{position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); font-weight:700; font-size:28px}
+.legend{display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; color:var(--muted); font-size:12px}
+.notice-list{display:flex; flex-direction:column; gap:12px; margin:0; padding:0; list-style:none}
+.notice-item{display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 12px; border:1px solid #e5e7eb; border-radius:12px}
+.notice-meta{display:flex; align-items:center; gap:8px; color:#64748b; font-size:12px}
+.btn-primary{background:var(--brand); color:#fff; border:none; padding:8px 10px; border-radius:8px; cursor:pointer}
+.calendar{display:grid; gap:8px}
+.calendar .cal-header{display:flex; align-items:center; justify-content:space-between; margin-bottom:6px}
+.calendar table{width:100%; border-collapse:separate; border-spacing:6px}
+.calendar th{font-size:12px; color:var(--muted); font-weight:600}
+.calendar td{background:#f8fafc; border-radius:8px; text-align:center; padding:8px 0; position:relative}
+.calendar td.event{background:#e0f2fe; font-weight:600}
+.calendar td.today{outline:2px solid var(--brand); outline-offset:2px}
+@media (max-width: 1100px){ .kpi-row{grid-template-columns:repeat(2,1fr)} .grid-2{grid-template-columns:1fr}}
+
+
+/* === Gradient KPI Cards (v3) === */
+.kpi-row .kpi-card{
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 22px;
+  border-radius: 20px;
+  color: #ffffff;
+  min-height: 96px;
+  box-shadow: 0 12px 25px rgba(16, 24, 40, .08);
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.kpi-row .kpi-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 16px 35px rgba(16, 24, 40, .12);
+  filter: saturate(1.05);
+}
+.kpi-row .kpi-card .kpi-body{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+.kpi-row .kpi-card .kpi-title{
+  font-size: 14px;
+  opacity: .95;
+}
+.kpi-row .kpi-card .kpi-value{
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+.kpi-row .kpi-card .kpi-icon{
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.9);
+  color: #334155;
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, .12);
+  flex: 0 0 auto;
+}
+.kpi-row .kpi-card .kpi-icon i{ font-size: 22px; }
+
+/* Gradients */
+.kpi-card.kpi--orange{
+  background: linear-gradient(135deg, #f59e0b 0%, #fb923c 40%, #f97316 100%);
+}
+.kpi-card.kpi--purple{
+  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #6d28d9 100%);
+}
+.kpi-card.kpi--cyan{
+  background: linear-gradient(135deg, #06b6d4 0%, #22d3ee 50%, #0891b2 100%);
+}
+.kpi-card.kpi--blue{
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 50%, #1d4ed8 100%);
+}
+
+/* Ensure grid spacing is comfy on small screens */
+.kpi-row{gap:20px}
+@media (max-width: 480px){
+  .kpi-row .kpi-card{padding:16px;border-radius:16px}
+  .kpi-row .kpi-card .kpi-icon{width:48px;height:48px}
+  .kpi-row .kpi-card .kpi-value{font-size:24px}
+}
+
+/* === KPI Card Contrast Upgrade (2025-10-23) === */
+.kpi-row .kpi-card{ color:#fff; }
+.kpi-row .kpi-card .kpi-title{
+  color:rgba(255,255,255,0.95);
+  font-weight:700;
+  font-size:15px;
+  letter-spacing:.2px;
+  text-shadow:0 1px 1px rgba(0,0,0,.18);
+}
+.kpi-row .kpi-card .kpi-value{
+  color:#fff;
+  font-size:34px;
+  font-weight:800;
+  line-height:1;
+  text-shadow:0 2px 4px rgba(0,0,0,.16);
+}
+.kpi-row .kpi-card .kpi-icon{
+  background:rgba(255,255,255,.9);
+  color:#374151; /* slate-700 for the icon glyph */
+  box-shadow:inset 0 0 0 2px rgba(255,255,255,.5);
+}
+/* tighter on mobile + ensure 2-col grid fallback */
+@media (max-width: 640px){
+  .kpi-row{ grid-template-columns:repeat(2,1fr); }
+  .kpi-row .kpi-card .kpi-value{ font-size:26px; }
+}

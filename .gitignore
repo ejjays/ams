@@ -1,0 +1,14 @@
+.DS_Store
+Thumbs.db
+/vendor/
+/composer.lock
+/node_modules/
+/uploads/**
+!/uploads/.gitkeep
+/storage/**
+!/storage/.gitkeep
+*.log
+*.cache
+*.tmp
+*.swp
+GEMINI.md
