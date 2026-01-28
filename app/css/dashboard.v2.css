@@ -173,3 +173,53 @@ body{font-family: var(--app-font);}
     box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
     transition: all 0.3s ease;
 }
+
+/* PREMIUM TOOLTIP */
+[data-tooltip] {
+    position: relative;
+    cursor: help;
+}
+
+[data-tooltip]::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    padding: 8px 12px;
+    background: #1e293b;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    border-radius: 8px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+[data-tooltip]:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* SKELETON LOADING */
+.skeleton-text {
+    height: 0.65rem;
+    background: linear-gradient(90deg, #eef2ff 25%, #e0e7ff 50%, #eef2ff 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s infinite;
+    border-radius: 999px;
+}
+
+.skeleton-bar {
+    height: 1.25rem; /* Thicker for progress bars */
+}
+
+@keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}

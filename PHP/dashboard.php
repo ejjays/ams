@@ -72,15 +72,19 @@ function active($page, $current)
           
           <div class="mb-8">
             <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Executive Summary</h4>
-            <div id="aiSummary" class="text-slate-700 font-medium leading-relaxed">
-              <!-- Summary types here -->
+            <div id="aiSummary" class="text-slate-700 font-medium leading-relaxed space-y-3">
+              <div class="skeleton-text w-full"></div>
+              <div class="skeleton-text w-full"></div>
+              <div class="skeleton-text w-full"></div>
+              <div class="skeleton-text w-4/5"></div>
             </div>
           </div>
 
           <div>
             <h4 class="text-xs font-bold text-indigo-600 uppercase mb-2">Strategic Action</h4>
-            <div id="aiAction" class="text-slate-600 text-sm italic border-l-2 border-indigo-200 pl-4">
-              <!-- Action types here -->
+            <div id="aiAction" class="text-slate-600 text-sm italic border-l-2 border-indigo-200 pl-4 space-y-2">
+              <div class="skeleton-text w-full"></div>
+              <div class="skeleton-text w-2/3"></div>
             </div>
           </div>
         </div>
@@ -91,7 +95,25 @@ function active($page, $current)
             <h3 class="text-lg font-bold text-slate-900">Program Status</h3>
             <span class="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Real-time Compliance</span>
           </div>
-          <div id="aiProgressBars" class="grid grid-cols-1 gap-6"></div>
+          <div id="aiProgressBars" class="grid grid-cols-1 gap-10">
+            <!-- Skeleton Items -->
+            <div class="space-y-4">
+              <div class="flex justify-between"><div class="skeleton-text w-32"></div><div class="skeleton-text w-10"></div></div>
+              <div class="skeleton-text skeleton-bar w-full"></div>
+            </div>
+            <div class="space-y-4">
+              <div class="flex justify-between"><div class="skeleton-text w-40"></div><div class="skeleton-text w-10"></div></div>
+              <div class="skeleton-text skeleton-bar w-full"></div>
+            </div>
+            <div class="space-y-4">
+              <div class="flex justify-between"><div class="skeleton-text w-36"></div><div class="skeleton-text w-10"></div></div>
+              <div class="skeleton-text skeleton-bar w-full"></div>
+            </div>
+            <div class="space-y-4">
+              <div class="flex justify-between"><div class="skeleton-text w-44"></div><div class="skeleton-text w-10"></div></div>
+              <div class="skeleton-text skeleton-bar w-full"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -99,12 +121,12 @@ function active($page, $current)
 
   <section class="grid-2 section">
     <div class="card">
-      <div class="card-title">Evidence by Program</div>
-      <div class="donut-wrap">
+      <div class="card-title text-slate-800 font-bold">Evidence by Program</div>
+      <div class="donut-wrap mb-8">
         <div class="chart-wrap"><canvas id="chartDonut" width="300" height="300"></canvas></div>
-        <div class="donut-center" id="donutCenter">0</div>
+        <div class="donut-center font-black text-slate-900" id="donutCenter">0</div>
       </div>
-      <div class="legend" id="donutLegend"></div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="donutLegend"></div>
     </div>
     <div class="card">
       <div class="card-title">
