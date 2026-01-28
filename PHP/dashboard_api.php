@@ -266,11 +266,12 @@ function get_ai_analytics($pdo) {
         unset($s);
 
         // 2. Get AI Summary from Service
-        $summary = AIService::getProgressSummary($stats);
+        $aiRes = AIService::getProgressSummary($stats);
 
         return [
             'stats' => $stats,
-            'summary' => $summary
+            'summary' => $aiRes['summary'],
+            'model' => $aiRes['model']
         ];
     } catch (Throwable $e) {
         return ['stats' => [], 'summary' => 'AI Analytics temporarily unavailable.'];

@@ -66,7 +66,7 @@
         const ai_analytics = aiJson.data;
         if (ai_analytics.summary) {
           console.log(`🤖 AI: Summary received via ${ai_analytics.model || 'Unknown Model'}`);
-          if (ai_analytics.summary.includes('AI Error:') || ai_analytics.summary.includes('API Error:')) {
+          if (typeof ai_analytics.summary === 'string' && (ai_analytics.summary.includes('AI Error:') || ai_analytics.summary.includes('API Error:'))) {
             console.error('🤖 AI Error Detected:', ai_analytics.summary);
           }
         }
@@ -76,6 +76,7 @@
         
         let aiData;
         try {
+          // It's already been cleaned by AIService
           aiData = typeof ai_analytics.summary === 'string' ? JSON.parse(ai_analytics.summary) : ai_analytics.summary;
         } catch (e) {
           aiData = { summary: "Institutional compliance metrics are being analyzed.", action: "Review program indicators for improvement." };

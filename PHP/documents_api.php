@@ -447,9 +447,20 @@ if ($method === 'GET' && $action === 'ai_insight') {
     }
 
     require_once __DIR__ . '/services/AIService.php';
-    $insight = AIService::getDocumentInsight($doc['title'], $doc['comment'], $content);
+    try {
+        $aiRes = AIService::getDocumentInsight($doc['title'], $doc['comment'], $content);
+        
+        // Ensure we always have an array with the expected keys
+        $insightText = is_array($aiRes) ? ($aiRes['insight'] ?? 'Analysis failed.') : 'Service error.';
+        $modelName = is_array($aiRes) ? ($aiRes['model'] ?? 'Unknown') : 'None';
 
-    jexit(true, ['insight' => $insight]);
+        jexit(true, [
+            'insight' => $insightText,
+            'model' => $modelName
+        ]);
+    } catch (Throwable $e) {
+        jexit(false, null, "AI Processing Error: " . $e->getMessage());
+    }
 }
 
 // ---------- Fallback ----------
