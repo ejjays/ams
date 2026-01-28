@@ -429,34 +429,34 @@ if ($method === 'GET' && $action === 'ai_insight') {
     $id = (int)($_GET['id'] ?? 0);
     if ($id <= 0) jexit(false, null, 'Missing id.');
 
-    $stmt = $pdo->prepare("SELECT title, comment, stored_name, file_ext FROM documents WHERE id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT title, comment, stored_name, file_ext, mime_type FROM documents WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $id]);
     $doc = $stmt->fetch();
 
     if (!$doc) jexit(false, null, 'Document not found.');
 
-    $content = null;
-    $ext = strtolower($doc['file_ext'] ?? '');
+    $fileInfo = [
+        'ext' => strtolower($doc['file_ext'] ?? ''),
+        'mime' => $doc['mime_type'] ?: 'application/octet-stream'
+    ];
     
-    // Only read text-based files for now to avoid complexity
-    if (in_array($ext, ['txt', 'csv', 'md'])) {
-        $path = $docsDir . '/' . $doc['stored_name'];
-        if (is_file($path)) {
-            $content = file_get_contents($path);
+    $path = $docsDir . '/' . $doc['stored_name'];
+    if (is_file($path)) {
+        if (in_array($fileInfo['ext'], ['txt', 'csv', 'md'])) {
+            $fileInfo['content'] = file_get_contents($path);
+        } else if (in_array($fileInfo['ext'], ['pdf', 'jpg', 'jpeg', 'png'])) {
+            // Convert to Base64 for Gemini Vision
+            $fileInfo['base64'] = base64_encode(file_get_contents($path));
         }
     }
 
     require_once __DIR__ . '/services/AIService.php';
     try {
-        $aiRes = AIService::getDocumentInsight($doc['title'], $doc['comment'], $content);
+        $aiRes = AIService::getDocumentInsight($doc['title'], $doc['comment'], $fileInfo);
         
-        // Ensure we always have an array with the expected keys
-        $insightText = is_array($aiRes) ? ($aiRes['insight'] ?? 'Analysis failed.') : 'Service error.';
-        $modelName = is_array($aiRes) ? ($aiRes['model'] ?? 'Unknown') : 'None';
-
         jexit(true, [
-            'insight' => $insightText,
-            'model' => $modelName
+            'insight' => $aiRes['text'] ?? 'Analysis failed.',
+            'model' => $aiRes['model'] ?? 'Unknown'
         ]);
     } catch (Throwable $e) {
         jexit(false, null, "AI Processing Error: " . $e->getMessage());
