@@ -219,9 +219,13 @@ if ($action === 'summary') {
     'donut' => $donut,
     'attendance' => $attendance,
     'notices' => $notices,
-    'events' => $events,
-    'ai_analytics' => get_ai_analytics($pdo)
+    'events' => $events
   ]);
+}
+
+// Dedicated AI Analytics Action (Async)
+if ($action === 'ai_analytics') {
+    respond(true, get_ai_analytics($pdo));
 }
 
 /**
