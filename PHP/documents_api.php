@@ -429,14 +429,25 @@ if ($method === 'GET' && $action === 'ai_insight') {
     $id = (int)($_GET['id'] ?? 0);
     if ($id <= 0) jexit(false, null, 'Missing id.');
 
-    $stmt = $pdo->prepare("SELECT title, comment FROM documents WHERE id = :id LIMIT 1");
+    $stmt = $pdo->prepare("SELECT title, comment, stored_name, file_ext FROM documents WHERE id = :id LIMIT 1");
     $stmt->execute([':id' => $id]);
     $doc = $stmt->fetch();
 
     if (!$doc) jexit(false, null, 'Document not found.');
 
+    $content = null;
+    $ext = strtolower($doc['file_ext'] ?? '');
+    
+    // Only read text-based files for now to avoid complexity
+    if (in_array($ext, ['txt', 'csv', 'md'])) {
+        $path = $docsDir . '/' . $doc['stored_name'];
+        if (is_file($path)) {
+            $content = file_get_contents($path);
+        }
+    }
+
     require_once __DIR__ . '/services/Gemini.php';
-    $insight = Gemini::getDocumentInsight($doc['title'], $doc['comment']);
+    $insight = Gemini::getDocumentInsight($doc['title'], $doc['comment'], $content);
 
     jexit(true, ['insight' => $insight]);
 }

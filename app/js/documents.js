@@ -166,27 +166,62 @@
             });
         });
 
+        // --- NEW: AI Insight Modal Handler ---
+        let typingTimer;
+        const openAIInsight = (text) => {
+            const modal = $('aiInsightModal');
+            const content = $('aiInsightContent');
+            content.innerHTML = '';
+            clearTimeout(typingTimer);
+            open(modal);
+            
+            let i = 0;
+            const type = () => {
+                if (i < text.length) {
+                    content.innerHTML += text.charAt(i);
+                    i++;
+                    // Auto-scroll to bottom as it types
+                    content.scrollTop = content.scrollHeight;
+                    typingTimer = setTimeout(type, 5); // Faster typing
+                }
+            };
+            type();
+        };
+
         // AI Insight
         docList.querySelectorAll('[data-ai-insight]').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-ai-insight');
+                const originalHtml = btn.innerHTML;
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
                 try {
+                    console.log('🤖 AI: Fetching document insight for ID:', id);
                     const res = await fetch(`${API}?action=ai_insight&id=${id}`);
                     const json = await res.json();
+                    
                     if (json.ok && json.data.insight) {
-                        alert("🤖 AI INSIGHT:\n\n" + json.data.insight);
+                        if (json.data.insight.startsWith('AI Error:') || json.data.insight.startsWith('Connection Error:')) {
+                            console.error('🤖 AI Error (Gemini):', json.data.insight);
+                        }
+                        openAIInsight(json.data.insight);
                     } else {
-                        alert("🤖 AI INSIGHT:\n\nThe AI is still processing this document or the description is too short to generate a specific insight.");
+                        console.warn('🤖 AI: No specific insight returned or analysis failed.');
+                        openAIInsight("The AI is currently analyzing this document. Please ensure the file contains readable text.");
                     }
                 } catch (e) {
+                    console.error('🤖 AI: Network or Connection Failure:', e);
                     alert("Failed to connect to AI service.");
                 } finally {
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i>';
+                    btn.innerHTML = originalHtml;
                 }
             });
+        });
+
+        // Close logic for AI Modal
+        document.querySelectorAll('#aiInsightModal [data-close]').forEach(el => {
+            el.addEventListener('click', () => close($('aiInsightModal')));
         });
 
         // Toggle inline preview inside the Review modal

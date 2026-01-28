@@ -43,7 +43,7 @@ class Gemini {
             "contents" => [["parts" => [["text" => $prompt]]]],
             "generationConfig" => [
                 "temperature" => 0.2,
-                "maxOutputTokens" => 1000,
+                "maxOutputTokens" => 2000,
                 "responseMimeType" => $isJson ? "application/json" : "text/plain"
             ]
         ];
@@ -77,8 +77,10 @@ class Gemini {
 
             $resText = $json['candidates'][0]['content']['parts'][0]['text'] ?? null;
             if ($resText) return $resText;
+            
+            return "AI Error: Response received but content is missing. Raw: " . substr($response, 0, 100);
         }
-        return "AI Error: Empty response from server.";
+        return "AI Error: Server returned no response (Check network/CURL).";
     }
 
     /**
@@ -112,10 +114,19 @@ class Gemini {
     /**
      * AI Document Insight: Analyzes a document's relevance
      */
-    public static function getDocumentInsight($title, $comment) {
+    public static function getDocumentInsight($title, $comment, $content = null) {
         if (!$title) return "Document title is missing. Please add a title to get AI insights.";
         
-        $prompt = "As an Accreditation Expert, explain in 2 concise sentences the likely importance of a document titled '{$title}' with the description '{$comment}' in a university accreditation process. What specific 'Area' or 'Standard' does it likely support?";
+        $prompt = "You are an Accreditation Expert. Analyze this document's importance for university accreditation.\n\n";
+        $prompt .= "TITLE: {$title}\n";
+        $prompt .= "DESCRIPTION: {$comment}\n";
+        
+        if ($content) {
+            $prompt .= "CONTENT PREVIEW: " . substr($content, 0, 2000) . "\n\n";
+        }
+        
+        $prompt .= "Explain in 2 concise sentences what specific accreditation 'Area' or 'Standard' this document likely supports based on its metadata and content.";
+        
         return self::ask($prompt) ?: "AI is currently unable to analyze this specific document. Please ensure the title is descriptive.";
     }
 

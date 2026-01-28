@@ -152,6 +152,33 @@ function active($page, $current)
             </div>
         </div>
     </div>
+    <div id="aiInsightModal" class="modal hidden">
+        <div class="modal-backdrop bg-slate-900/40 backdrop-blur-sm" data-close="true"></div>
+        <div class="modal-card w-[640px] border-0 bg-white/95 shadow-2xl overflow-hidden rounded-[2rem]">
+            <div class="bg-indigo-600 px-8 py-5 flex items-center justify-between">
+                <div class="flex items-center gap-3 text-white">
+                    <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                        <i class="fa-solid fa-wand-magic-sparkles text-sm animate-pulse"></i>
+                    </div>
+                    <h3 class="text-lg font-bold tracking-tight uppercase">AI Document Analysis</h3>
+                </div>
+                <button id="aiInsightClose" class="w-8 h-8 rounded-full hover:bg-white/10 text-white transition-colors" data-close="true">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-10">
+                <div id="aiInsightContent" class="text-slate-700 text-xl leading-relaxed font-medium italic border-l-4 border-indigo-500 pl-8 mb-8 min-h-[150px] max-h-[400px] overflow-y-auto">
+                    <!-- AI text -->
+                </div>
+                <div class="flex justify-end pt-6 border-t border-slate-100">
+                    <button type="button" class="px-8 py-3 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95" data-close="true">
+                        Understood
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="../app/js/documents.js?v=7"></script>
 </body>
 

@@ -54,12 +54,23 @@
 
     // 2. ASYNC LOAD: Get AI Analytics in background
     const handleAI = async () => {
+      console.log('🤖 AI: Starting background analysis...');
       try {
         const aiRes = await fetch('dashboard_api.php?action=ai_analytics', {credentials:'same-origin'});
         const aiJson = await aiRes.json();
-        if (!aiJson.ok) return;
+        if (!aiJson.ok) {
+          console.error('🤖 AI Error (API):', aiJson.error || 'Unknown server error');
+          return;
+        }
         
         const ai_analytics = aiJson.data;
+        if (ai_analytics.summary) {
+          console.log('🤖 AI: Summary received successfully.');
+          if (ai_analytics.summary.includes('AI Error:') || ai_analytics.summary.includes('API Error:')) {
+            console.error('🤖 AI Error Detected:', ai_analytics.summary);
+          }
+        }
+
         const summaryEl = document.getElementById('aiSummary');
         const actionEl = document.getElementById('aiAction');
         
