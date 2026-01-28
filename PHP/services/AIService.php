@@ -117,9 +117,11 @@ class AIService {
     }
 
     public static function getProgressSummary($stats) {
-        $prompt = "Accreditation Analysis: ";
+        $prompt = "You are a Senior University Quality Assurance Officer. Analyze these program compliance percentages for an upcoming accreditation audit: ";
         foreach($stats as $s) { $prompt .= "{$s['program']} ({$s['percentage']}%), "; }
-        $prompt .= ". JSON respond: {\"summary\": \"2 sentences\", \"action\": \"1 recommendation\"}.";
+        $prompt .= "\nRespond ONLY with a JSON object: "
+                . "{\"summary\": \"Provide a high-level overview of institutional readiness in 2 sentences.\", "
+                . "\"action\": \"Provide 1 professional recommendation focusing on helping the lowest-performing programs meet audit standards.\"}";
         
         // DASHBOARD USES LLAMA ONLY TO SAVE QUOTA
         $result = self::ask($prompt, true, 'llama'); 
