@@ -10,9 +10,10 @@ class Gemini {
     private static function init() {
         if (self::$apiKey !== null) return;
 
-        // Try to get from .env or environment
-        if (file_exists(__DIR__ . '/.env')) {
-            $lines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        // Try to get from .env in parent directory
+        $envPath = dirname(__DIR__) . '/.env';
+        if (file_exists($envPath)) {
+            $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             foreach ($lines as $line) {
                 if (strpos(trim($line), 'GEMINI_API_KEY=') === 0) {
                     self::$apiKey = trim(substr($line, 15));
@@ -26,7 +27,7 @@ class Gemini {
     }
 
     /**
-     * Sends a prompt to Gemini 1.5 Flash
+     * Sends a prompt to Gemini 2.5 Flash
      * @param string $prompt
      * @return string|null
      */

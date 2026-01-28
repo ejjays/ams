@@ -264,7 +264,7 @@ if ($method === 'POST' && $action === 'save') {
         
         // --- START: AI AUTO-TAGGING ---
         try {
-            require_once __DIR__ . '/Gemini.php';
+            require_once __DIR__ . '/services/Gemini.php';
             $indicators = $pdo->query("SELECT id, title FROM indicator_labels LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
             $indList = "";
             foreach($indicators as $ind) { $indList .= "[ID:{$ind['id']}] {$ind['title']}\n"; }
