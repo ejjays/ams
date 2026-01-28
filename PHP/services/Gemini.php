@@ -48,9 +48,17 @@ class Gemini {
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
         $response = curl_exec($ch);
+        if (curl_errno($ch)) {
+            error_log("Gemini CURL Error: " . curl_error($ch));
+            return null;
+        }
         curl_close($ch);
 
         $json = json_decode($response, true);
+        if (isset($json['error'])) {
+            error_log("Gemini API Error: " . json_encode($json['error']));
+        }
+        
         return $json['candidates'][0]['content']['parts'][0]['text'] ?? null;
     }
 

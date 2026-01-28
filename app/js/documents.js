@@ -51,7 +51,7 @@
         const cmt = esc(d.comment || '');
         const ext = esc((d.file_ext || '').toUpperCase());
         const owner = d.owner ? `<div class="text-xs text-slate-500 mt-1">by ${esc(d.owner)}</div>` : '';
-        const aiTag = d.ai_tag ? `<div class="mt-2"><span class="text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full"><i class="fa-solid fa-robot mr-1"></i> ${esc(d.ai_tag)}</span></div>` : '';
+        const aiTag = d.ai_tag ? `<div class="mt-3"><span class="ai-tag-glow text-[10px] font-black uppercase tracking-widest bg-indigo-600 text-white px-3 py-1 rounded-md inline-flex items-center shadow-lg shadow-indigo-200"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i> ${esc(d.ai_tag)}</span></div>` : '';
 
         // Get rating data
         const ratingLine = (d.avg_rating || d.my_review_rating)

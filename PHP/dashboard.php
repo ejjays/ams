@@ -61,10 +61,22 @@ function active($page, $current)
 
   <!-- AI Driven Analytics Section -->
   <section class="section">
-    <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500">
-      <div class="card-title text-blue-800"><i class="fa-solid fa-robot mr-2"></i> AI Compliance Insights</div>
-      <div id="aiSummary" class="text-gray-700 italic py-2">Analyzing progress...</div>
-      <div id="aiProgressBars" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 relative overflow-hidden">
+      <div class="flex items-center gap-4 mb-6">
+        <div class="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-200">
+          <i class="fa-solid fa-wand-magic-sparkles text-xl"></i>
+        </div>
+        <div>
+          <h3 class="text-xl font-extrabold text-gray-900 tracking-tight">Accreditation Insight</h3>
+          <p class="text-xs font-bold text-indigo-600 uppercase tracking-widest">Powered by Gemini 2.5 Flash</p>
+        </div>
+      </div>
+      
+      <div id="aiSummary" class="text-gray-600 text-lg leading-relaxed font-medium mb-8 border-l-4 border-indigo-100 pl-6 italic">
+        <!-- Typing effect -->
+      </div>
+      
+      <div id="aiProgressBars" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
     </div>
   </section>
 

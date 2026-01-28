@@ -13,19 +13,36 @@
 
     // Render AI Analytics
     if (ai_analytics) {
-      setText('aiSummary', ai_analytics.summary);
+      const summaryEl = document.getElementById('aiSummary');
+      const text = ai_analytics.summary || '';
+      let i = 0;
+      summaryEl.innerHTML = '';
+      summaryEl.classList.add('typing-cursor');
+      
+      const typeWriter = () => {
+        if (i < text.length) {
+          summaryEl.innerHTML += text.charAt(i);
+          i++;
+          setTimeout(typeWriter, 12); // Slightly faster for better feel
+        } else {
+          summaryEl.classList.remove('typing-cursor');
+        }
+      };
+      typeWriter();
+
       const progContainer = document.getElementById('aiProgressBars');
       if (progContainer) {
         progContainer.innerHTML = (ai_analytics.stats || []).map(s => {
           const p = s.percentage || 0;
+          const colorClass = p > 70 ? 'bg-indigo-600' : (p > 30 ? 'bg-indigo-400' : 'bg-indigo-200');
           return `
-            <div>
-              <div class="flex justify-between text-xs mb-1">
-                <span class="font-semibold text-gray-600">${s.program}</span>
-                <span class="text-blue-600">${p}%</span>
+            <div class="ai-progress-item group">
+              <div class="flex justify-between items-center mb-3">
+                <span class="text-sm font-bold text-gray-800 group-hover:text-indigo-700 transition-colors">${s.program}</span>
+                <span class="text-xs font-black px-2 py-0.5 rounded bg-gray-100 text-gray-700">${p}%</span>
               </div>
-              <div class="w-full bg-gray-200 rounded-full h-2">
-                <div class="bg-blue-600 h-2 rounded-full" style="width: ${p}%"></div>
+              <div class="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+                <div class="${colorClass} h-full rounded-full transition-all duration-1000 ease-out shadow-sm" style="width: ${p}%"></div>
               </div>
             </div>
           `;
