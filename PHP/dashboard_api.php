@@ -214,7 +214,60 @@ if ($action === 'summary') {
     $events = [['date' => date('Y-m-') . '05', 'title' => 'Planning'], ['date' => date('Y-m-') . '12', 'title' => 'Submission'], ['date' => date('Y-m-') . '20', 'title' => 'Review']];
   }
 
-  respond(true, ['totals' => $totals, 'donut' => $donut, 'attendance' => $attendance, 'notices' => $notices, 'events' => $events]);
+  respond(true, [
+    'totals' => $totals,
+    'donut' => $donut,
+    'attendance' => $attendance,
+    'notices' => $notices,
+    'events' => $events,
+    'ai_analytics' => get_ai_analytics($pdo)
+  ]);
+}
+
+/**
+ * AI-Driven Progress Analytics
+ * Calculates compliance and generates a Gemini summary.
+ */
+function get_ai_analytics($pdo) {
+    require_once __DIR__ . '/Gemini.php';
+    
+    try {
+        // 1. Calculate Progress
+        $sql = "
+            SELECT 
+                p.name as program,
+                (SELECT COUNT(*) FROM indicator_labels) as total_required,
+                COUNT(DISTINCT l.indicator_id) as uploaded_count
+            FROM programs p
+            LEFT JOIN level_programs lp ON lp.program_id = p.id
+            LEFT JOIN sections s ON s.level_id = lp.level_id
+            LEFT JOIN parameters par ON par.section_id = s.id
+            LEFT JOIN parameter_labels pl ON pl.parameter_id = par.id
+            LEFT JOIN indicator_labels il ON il.parameter_label_id = pl.id
+            LEFT JOIN indicator_document_links l ON l.indicator_id = il.id
+            GROUP BY p.id
+        ";
+        $stmt = $pdo->query($sql);
+        $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $prompt = "As an Accreditation Assistant, summarize this progress for the dashboard in 2-3 concise sentences. Mention specific percentages: ";
+        foreach($stats as &$s) {
+            $perc = $s['total_required'] > 0 ? round(($s['uploaded_count'] / $s['total_required']) * 100) : 0;
+            $s['percentage'] = $perc;
+            $prompt .= "{$s['program']}: {$perc}%, ";
+        }
+        unset($s); // break the reference
+
+        // 2. Get AI Summary
+        $summary = Gemini::ask($prompt) ?: "Progress data updated. Please check compliance details per program.";
+
+        return [
+            'stats' => $stats,
+            'summary' => $summary
+        ];
+    } catch (Throwable $e) {
+        return ['stats' => [], 'summary' => 'AI Analytics temporarily unavailable.'];
+    }
 }
 
 $facilities = table_exists($pdo, 'facilities') ? safe_count($pdo, 'facilities') : 0;

@@ -5,11 +5,34 @@
     const r = await fetch('dashboard_api.php?action=summary', {credentials:'same-origin'});
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'Failed');
-    const { totals, donut, attendance, notices, events } = j.data;
+    const { totals, donut, attendance, notices, events, ai_analytics } = j.data;
     setText('kpiPrograms', totals.programs ?? '0');
     setText('kpiVisits', totals.visits ?? '0');
     setText('kpiUsers', totals.users ?? '0');
     setText('kpiDocuments', totals.documents ?? '0');
+
+    // Render AI Analytics
+    if (ai_analytics) {
+      setText('aiSummary', ai_analytics.summary);
+      const progContainer = document.getElementById('aiProgressBars');
+      if (progContainer) {
+        progContainer.innerHTML = (ai_analytics.stats || []).map(s => {
+          const p = s.percentage || 0;
+          return `
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <span class="font-semibold text-gray-600">${s.program}</span>
+                <span class="text-blue-600">${p}%</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full" style="width: ${p}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
     if (window.Chart){
       
     

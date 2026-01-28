@@ -116,7 +116,8 @@ if ($method === 'GET' && $action === 'list') {
     // Subquery para sa ratings
     $ratingsSubQuery = "
         (SELECT AVG(r.rating) FROM document_reviews r WHERE r.document_id = d.id) AS avg_rating,
-        (SELECT r2.rating FROM document_reviews r2 WHERE r2.document_id = d.id AND r2.user_id = :current_user_id) AS my_review_rating
+        (SELECT r2.rating FROM document_reviews r2 WHERE r2.document_id = d.id AND r2.user_id = :current_user_id) AS my_review_rating,
+        (SELECT il.title FROM indicator_document_links idl JOIN indicator_labels il ON il.id = idl.indicator_id WHERE idl.document_id = d.id LIMIT 1) AS ai_tag
     ";
 
     if ($tab === 'mine') {
@@ -259,7 +260,26 @@ if ($method === 'POST' && $action === 'save') {
             ':m' => $mime,
             ':z' => $size
         ]);
-        jexit(true, ['id' => $pdo->lastInsertId()]);
+        $id = (int)$pdo->lastInsertId();
+        
+        // --- START: AI AUTO-TAGGING ---
+        try {
+            require_once __DIR__ . '/Gemini.php';
+            $indicators = $pdo->query("SELECT id, title FROM indicator_labels LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
+            $indList = "";
+            foreach($indicators as $ind) { $indList .= "[ID:{$ind['id']}] {$ind['title']}\n"; }
+            
+            $prompt = "Given the document title '{$title}', pick the most relevant Indicator ID from this list. Return ONLY the ID number, nothing else:\n" . $indList;
+            $suggestedId = trim(Gemini::ask($prompt));
+            
+            if (is_numeric($suggestedId)) {
+                $pdo->prepare("INSERT IGNORE INTO indicator_document_links (indicator_id, document_id, uploaded_by) VALUES (?, ?, ?)")
+                    ->execute([$suggestedId, $id, $userId]);
+            }
+        } catch (Throwable $aiErr) { error_log("AI Tagging Error: " . $aiErr->getMessage()); }
+        // --- END: AI AUTO-TAGGING ---
+
+        jexit(true, ['id' => $id]);
     } else {
         if ($fileProvided) {
             $stmt = $pdo->prepare("

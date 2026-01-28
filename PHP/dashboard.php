@@ -59,6 +59,15 @@ function active($page, $current)
     </div>
   </section>
 
+  <!-- AI Driven Analytics Section -->
+  <section class="section">
+    <div class="card bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500">
+      <div class="card-title text-blue-800"><i class="fa-solid fa-robot mr-2"></i> AI Compliance Insights</div>
+      <div id="aiSummary" class="text-gray-700 italic py-2">Analyzing progress...</div>
+      <div id="aiProgressBars" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </div>
+  </section>
+
   <section class="grid-2 section">
     <div class="card">
       <div class="card-title">Evidence by Program</div>
