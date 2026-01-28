@@ -53,16 +53,32 @@ class Gemini {
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        
+        // --- BYPASS SSL FOR LOCAL SERVERS ---
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         
         $response = curl_exec($ch);
 
+        if (curl_errno($ch)) {
+            $err = curl_error($ch);
+            error_log("Gemini Connection Error: " . $err);
+            return "Connection Error: " . $err;
+        }
+
         if ($response) {
             $json = json_decode($response, true);
+            
+            if (isset($json['error'])) {
+                $msg = $json['error']['message'] ?? 'Unknown API Error';
+                error_log("Gemini API Error: " . $msg);
+                return "API Error: " . $msg;
+            }
+
             $resText = $json['candidates'][0]['content']['parts'][0]['text'] ?? null;
             if ($resText) return $resText;
         }
-        return null;
+        return "AI Error: Empty response from server.";
     }
 
     /**
