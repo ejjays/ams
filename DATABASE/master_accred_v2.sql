@@ -1069,8 +1069,6 @@ CREATE TABLE IF NOT EXISTS `document_delete_history` (
   `deleted_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-
-
 -- 6. Create missing Document Reviews table (for Stars/Comments)
 CREATE TABLE IF NOT EXISTS `document_reviews` (
   `id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -1090,3 +1088,27 @@ CREATE TABLE IF NOT EXISTS `indicator_document_links` (
   `uploaded_by` INT UNSIGNED NOT NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ========================================================
+-- 8. BESTLINK COLLEGE ACCREDITATION DATA (CLEANUP)
+-- ========================================================
+
+-- Note: this wipes out the "s", "d", "sample" test tags and
+-- sets up 10 Areas of Accreditation.
+
+DELETE FROM `indicator_labels`;
+ALTER TABLE `indicator_labels` AUTO_INCREMENT = 1;
+
+INSERT INTO `indicator_labels` (`parameter_label_id`, `title`, `sort_order`) VALUES
+(7, 'Area I: VMGO', 1),
+(7, 'Area II: Faculty & Staff', 2),
+(7, 'Area III: Curriculum', 3),
+(7, 'Area IV: Student Services', 4),
+(7, 'Area V: Research', 5),
+(7, 'Area VI: Extension', 6),
+(7, 'Area VII: Library', 7),
+(7, 'Area VIII: Physical Plant', 8),
+(7, 'Area IX: Laboratories', 9),
+(7, 'Area X: Administration', 10);
+
+COMMIT;
