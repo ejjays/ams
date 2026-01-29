@@ -59,7 +59,7 @@ if ($action === 'summary') {
     }
     if ($ok) {
       $sql = "
-        SELECT p.name AS label, COALESCE(c.n,0) AS n
+        SELECT p.name AS label, p.code AS code, COALESCE(c.n,0) AS n
         FROM programs p
         LEFT JOIN (
           SELECT lp.program_id, COUNT(*) AS n
@@ -77,6 +77,7 @@ if ($action === 'summary') {
       $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
       if ($rows) {
         $donut['labels'] = array_column($rows, 'label');
+        $donut['codes'] = array_column($rows, 'code');
         $donut['data'] = array_map('intval', array_column($rows, 'n'));
         $donut['center'] = array_sum($donut['data']);
       }
@@ -239,17 +240,30 @@ function get_ai_analytics($pdo) {
         // 1. Calculate Progress
         $sql = "
             SELECT 
+                p.id as program_id,
                 p.name as program,
-                (SELECT COUNT(*) FROM indicator_labels) as total_required,
-                COUNT(DISTINCT l.indicator_id) as uploaded_count
+                COALESCE(req.total, 0) as total_required,
+                COALESCE(links.uploaded_count, 0) as uploaded_count
             FROM programs p
-            LEFT JOIN level_programs lp ON lp.program_id = p.id
-            LEFT JOIN sections s ON s.level_id = lp.level_id
-            LEFT JOIN parameters par ON par.section_id = s.id
-            LEFT JOIN parameter_labels pl ON pl.parameter_id = par.id
-            LEFT JOIN indicator_labels il ON il.parameter_label_id = pl.id
-            LEFT JOIN indicator_document_links l ON l.indicator_id = il.id
-            GROUP BY p.id
+            LEFT JOIN (
+                SELECT lp.program_id, COUNT(DISTINCT il.id) as total
+                FROM level_programs lp
+                JOIN sections s ON s.level_id = lp.level_id
+                JOIN parameters par ON par.section_id = s.id
+                JOIN parameter_labels pl ON pl.parameter_id = par.id
+                JOIN indicator_labels il ON il.parameter_label_id = pl.id
+                GROUP BY lp.program_id
+            ) req ON req.program_id = p.id
+            LEFT JOIN (
+                SELECT lp.program_id, COUNT(DISTINCT l.indicator_id) as uploaded_count
+                FROM level_programs lp
+                JOIN sections s ON s.level_id = lp.level_id
+                JOIN parameters par ON par.section_id = s.id
+                JOIN parameter_labels pl ON pl.parameter_id = par.id
+                JOIN indicator_labels il ON il.parameter_label_id = pl.id
+                JOIN indicator_document_links l ON l.indicator_id = il.id
+                GROUP BY lp.program_id
+            ) links ON links.program_id = p.id
         ";
         $stmt = $pdo->query($sql);
         $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);

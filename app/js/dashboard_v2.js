@@ -4,7 +4,7 @@
   
   try {
     // 1. FAST LOAD: Get basic stats and charts
-    const r = await fetch('dashboard_api.php?action=summary', {credentials:'same-origin'});
+    const r = await fetch(`dashboard_api.php?action=summary&t=${Date.now()}`, {credentials:'same-origin'});
     const j = await r.json();
     if (!j.ok) throw new Error(j.error || 'Failed');
     
@@ -80,7 +80,7 @@
         <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all group" data-tooltip="${l}">
           <div class="flex items-center gap-3 overflow-hidden">
             <div class="w-3 h-3 rounded-full shadow-sm flex-none" style="background:${bgColors[i]}"></div>
-            <span class="text-sm font-bold text-slate-600 truncate">${l}</span>
+            <span class="text-sm font-bold text-slate-600 truncate">${donut.codes[i] || l}</span>
           </div>
           <span class="text-xs font-black px-2 py-1 rounded-lg bg-white text-slate-800 shadow-sm border border-slate-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors flex-none">${donut.data[i] ?? 0}</span>
         </div>
@@ -170,7 +170,7 @@
     // 2. ASYNC LOAD: AI Analytics
     const handleAI = async () => {
       try {
-        const aiRes = await fetch('dashboard_api.php?action=ai_analytics', {credentials:'same-origin'});
+        const aiRes = await fetch(`dashboard_api.php?action=ai_analytics&t=${Date.now()}`, {credentials:'same-origin'});
         const aiJson = await aiRes.json();
         if (!aiJson.ok) return;
         
