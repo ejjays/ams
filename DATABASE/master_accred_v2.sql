@@ -1029,7 +1029,7 @@ COMMIT;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 -- ========================================================
--- AI & SECURITY PATCH (MISSING)
+-- AI & SECURITY PATCH (FINAL PRODUCTION VERSION)
 -- ========================================================
 
 -- 1. Fix Users table for security lockout
@@ -1039,7 +1039,10 @@ ALTER TABLE `users` ADD COLUMN IF NOT EXISTS `last_failed_login` DATETIME DEFAUL
 -- 2. Fix Documents table for archiving
 ALTER TABLE `documents` ADD COLUMN IF NOT EXISTS `archived_at` DATETIME DEFAULT NULL;
 
--- 3. Fix Program Accreditation for compliance status
+-- 3. Fix Programs table for archiving
+ALTER TABLE `programs` ADD COLUMN IF NOT EXISTS `is_archived` TINYINT(1) DEFAULT 0;
+
+-- 4. Fix Program Accreditation for compliance status
 ALTER TABLE `program_accreditation` ADD COLUMN IF NOT EXISTS `compliance_status` ENUM('Compliant','Minor Deficiency','Major Deficiency') DEFAULT 'Compliant';
 
 -- 4. Create missing Audit Logs table

@@ -1,146 +1,205 @@
-// app/js/programs.js v10 — Updated for Soft Delete / Archiving
-(function(){
+(function () {
   const API = 'programs_api.php';
 
-  const tbody    = document.getElementById('programTbody');
+  const grid = document.getElementById('programList');
   const createBt = document.getElementById('programCreateBtn');
   const searchIn = document.getElementById('programSearch');
 
-  const modal  = document.getElementById('programCreateModal');
+  const modal = document.getElementById('programCreateModal');
   const mtitle = document.getElementById('programModalTitle');
-  const form   = document.getElementById('programCreateForm');
+  const form = document.getElementById('programCreateForm');
   const cancel = document.getElementById('programCreateCancel');
 
-  const $   = (id) => document.getElementById(id);
-  const open= (el) => el && el.classList.remove('hidden');
-  const close=(el)=> el && el.classList.add('hidden');
-  const esc = (s)  => (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+  const $ = id => document.getElementById(id);
 
-  function rowView(p){
-    const desc = (p.description || '').trim();          // still display read-only column
-    const descShort = desc.length > 120 ? (desc.slice(0,117) + '…') : desc;
-    const created = (p.created_at || p.created || '').slice(0,10);
-    
-    // UPDATED: Button is now "Archive" (Amber color) instead of "Delete" (Red)
-    return `
-      <tr class="bg-white shadow-sm ring-1 ring-slate-200 rounded-lg align-middle">
-        <td class="px-5 py-3 font-semibold text-slate-800 rounded-l-lg">${esc(p.code)}</td>
-        <td class="px-5 py-3 text-[1.02rem]">${esc(p.name || '')}</td>
-        <td class="px-5 py-3 text-slate-600 text-[1.02rem]">${esc(descShort)}</td>
-        <td class="px-5 py-3 text-slate-500">${esc(created)}</td>
-        <td class="px-5 py-3 rounded-r-lg">
-          <a href="javascript:void(0)" class="text-blue-700 hover:underline mr-4" title="Edit"
-             data-edit='${JSON.stringify(p)}' onclick="event.stopPropagation()">Edit</a>
-          
-          <a href="javascript:void(0)" class="text-amber-600 hover:underline" title="Archive"
-             data-archive="${p.id}" data-name="${esc(p.code)}" onclick="event.stopPropagation()">
-             <i class="fa-solid fa-box-archive mr-1"></i>Archive
-          </a>
-        </td>
-      </tr>`;
+  function showToast(msg, type = 'info') {
+    const container = $('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    const colors = { success: 'bg-emerald-600', error: 'bg-rose-600', info: 'bg-indigo-600' };
+    const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', info: 'fa-circle-info' };
+    toast.className = `flex items-center gap-3 px-6 py-3.5 rounded-2xl text-white text-sm font-bold shadow-xl transition-all duration-500 translate-y-[-20px] opacity-0 ${colors[type] || colors.info}`;
+    toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> <span>${msg}</span>`;
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.remove('translate-y-[-20px]', 'opacity-0'), 10);
+    setTimeout(() => {
+      toast.classList.add('translate-y-[-20px]', 'opacity-0');
+      setTimeout(() => toast.remove(), 500);
+    }, 4000);
   }
 
-  function render(list){
+  function openModal(el) {
+    if (!el) return;
+    el.classList.remove('hidden', 'closing');
+    el.style.display = 'flex';
+  }
+  function closeModal(el) {
+    if (!el || el.classList.contains('hidden')) return;
+    el.classList.add('closing');
+    setTimeout(() => {
+      el.classList.add('hidden');
+      el.classList.remove('closing');
+      el.style.display = 'none';
+    }, 150);
+  }
+
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('modal-backdrop')) {
+      const m = e.target.closest('.modal');
+      if (m) closeModal(m);
+    }
+    const closer = e.target.closest('[data-close="true"]');
+    if (closer) {
+      const m = closer.closest('.modal');
+      if (m) closeModal(m);
+    }
+  });
+
+  const esc = s => (s || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+
+  function cardView(p) {
+    const code = esc(p.code);
+    const name = esc(p.name);
+    const created = (p.created_at || '').slice(0, 10);
+
+    return `
+    <div class="group bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-indigo-100 transition-all duration-300 p-6 flex items-center justify-between gap-8">
+      <div class="flex items-center gap-8 flex-1 min-w-0">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 text-white flex items-center justify-center font-black text-xs shadow-lg shadow-indigo-200 border border-white/20 shrink-0 group-hover:scale-105 transition-transform duration-500">
+          ${code}
+        </div>
+        
+        <div class="flex-1 min-w-0">
+          <div class="font-bold text-slate-800 leading-snug text-xl mb-1 group-hover:text-indigo-600 transition-colors truncate">${name}</div>
+          <div class="flex items-center gap-4">
+            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                <i class="fa-solid fa-fingerprint text-[8px] text-slate-300"></i> ID: ${p.id}
+            </span>
+            <span class="w-1 h-1 rounded-full bg-slate-200"></span>
+            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+                <i class="fa-regular fa-clock text-[8px] text-slate-300"></i> Added ${created}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <button class="w-11 h-11 rounded-2xl bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white transition-all active:scale-90 flex items-center justify-center shadow-sm shadow-indigo-100 border border-indigo-100 hover:border-indigo-600" title="Edit" data-edit='${JSON.stringify(p)}'>
+          <i class="fa-solid fa-pen-to-square text-sm"></i>
+        </button>
+        <button class="w-11 h-11 rounded-2xl bg-amber-50 hover:bg-amber-500 text-amber-600 hover:text-white transition-all active:scale-90 flex items-center justify-center shadow-sm shadow-amber-100 border border-amber-100 hover:border-amber-500" title="Archive" data-archive="${p.id}" data-name="${code}">
+          <i class="fa-solid fa-box-archive text-sm"></i>
+        </button>
+      </div>
+    </div>`;
+  }
+
+  function render(list) {
     if (!list || !list.length) {
-      tbody.innerHTML = `
-        <tr>
-          <td class="px-5 py-6 text-slate-500" colspan="5">No active programs found.</td>
-        </tr>`;
+      grid.innerHTML = `<div class="py-20 text-center space-y-4 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+        <div class="text-slate-200"><i class="fa-solid fa-folder-open text-6xl"></i></div>
+        <div class="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px]">No active programs found.</div>
+      </div>`;
       return;
     }
-    tbody.innerHTML = list.map(rowView).join('');
+    grid.innerHTML = list.map(cardView).join('');
 
-    // wire Edit
-    tbody.querySelectorAll('[data-edit]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
+    grid.querySelectorAll('[data-edit]').forEach(btn => {
+      btn.addEventListener('click', () => {
         const p = JSON.parse(btn.getAttribute('data-edit'));
         mtitle.textContent = 'Edit Program';
-        $('program_id').value   = p.id;
+        if ($('programSubmitBtn')) $('programSubmitBtn').textContent = 'Update Program';
+        $('program_id').value = p.id;
         $('program_code').value = p.code || '';
         $('program_name').value = p.name || '';
-        open(modal);
+        openModal(modal);
       });
     });
 
-    // UPDATED: Wire Archive (formerly Delete)
-    tbody.querySelectorAll('[data-archive]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
+    grid.querySelectorAll('[data-archive]').forEach(btn => {
+      btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-archive');
-        const name = btn.getAttribute('data-name') || 'this program';
+        const name = btn.getAttribute('data-name');
         
-        // UPDATED: Message emphasizes archiving, not deleting
-        if(!confirm(`Are you sure you want to ARCHIVE ${name}?\n\nIt will be hidden from this list but preserved in the database history.`)) return;
-        
-        // We still send DELETE method, but backend handles it as a Soft Delete (Update)
-        const res = await fetch(`${API}?id=${encodeURIComponent(id)}&t=${Date.now()}`, { method:'DELETE' });
-        const json = await res.json();
-        
-        if(!json.ok) return alert(json.error || 'Archive failed');
-        
-        // Reload list to remove the archived item
-        load(getQ());
+        $('archiveProgramName').textContent = name;
+        openModal($('archiveModal'));
+
+        const confirmBtn = $('archiveConfirmBtn');
+        // Remove old listener to avoid multiple triggers
+        const newConfirm = confirmBtn.cloneNode(true);
+        confirmBtn.parentNode.replaceChild(newConfirm, confirmBtn);
+
+        newConfirm.addEventListener('click', async () => {
+          newConfirm.disabled = true;
+          newConfirm.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Archiving...';
+          
+          try {
+            const res = await fetch(`${API}?id=${id}`, { method: 'DELETE' });
+            const json = await res.json();
+            if (json.ok) {
+              showToast(`Program ${name} archived successfully.`, 'success');
+              closeModal($('archiveModal'));
+              load(getQ());
+            } else {
+              showToast(json.error || 'Archive failed', 'error');
+            }
+          } catch (e) {
+            showToast("Connection failed.", "error");
+          } finally {
+            newConfirm.disabled = false;
+            newConfirm.textContent = 'Yes, Archive';
+          }
+        });
       });
     });
   }
 
-  async function load(q=''){
-    const url = q ? `${API}?q=${encodeURIComponent(q)}&t=${Date.now()}`
-                  : `${API}?t=${Date.now()}`;
-    const res = await fetch(url);
+  async function load(q = '') {
+    const res = await fetch(`${API}?q=${encodeURIComponent(q)}&t=${Date.now()}`);
     const json = await res.json();
     render(json.ok ? (json.data || []) : []);
-    if (!json.ok) console.error(json.error || 'Failed to load programs');
   }
 
-  function getQ(){ return (searchIn?.value || '').trim(); }
+  function getQ() { return (searchIn?.value || '').trim(); }
 
-  // Create modal (code + name only)
-  createBt?.addEventListener('click', ()=>{
-    mtitle.textContent = 'Create Program';
+  createBt?.addEventListener('click', () => {
+    mtitle.textContent = 'New Program';
+    if ($('programSubmitBtn')) $('programSubmitBtn').textContent = 'Save Program';
     form.reset();
     $('program_id').value = '';
-    open(modal);
+    openModal(modal);
   });
 
-  // Cancel
-  cancel?.addEventListener('click', ()=> close(modal));
+  cancel?.addEventListener('click', () => closeModal(modal));
 
-  // Save (create/update) — send only code + name
-  form.addEventListener('submit', async (e)=>{
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     const fd = new FormData(form);
-    const id   = fd.get('id');
-    const code = (fd.get('code')||'').trim();
-    const name = (fd.get('name')||'').trim();
-    if(!code || !name){ alert('Code and Name are required.'); return; }
-
-    let ok=false;
-    // Note: The backend now has "Smart Restore". If you create a code that was previously archived, 
-    // the backend will automatically restore it and return success.
+    const id = fd.get('id');
+    
+    let res;
     if (id) {
-      const payload = { id, code, name };  // no description
-      const res = await fetch(API, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
-      const json = await res.json(); ok = json.ok; if(!ok) alert(json.error || 'Update failed');
+      const payload = { id, code: fd.get('code'), name: fd.get('name') };
+      res = await fetch(API, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     } else {
-      const res = await fetch(API, { method:'POST', body: fd }); // fd has only code & name
-      const json = await res.json(); 
-      ok = json.ok; 
-      if(!ok) alert(json.error || 'Create failed');
-      else if(json.message) alert(json.message); // Show "Program restored" message if applicable
+      res = await fetch(API, { method: 'POST', body: fd });
     }
-    if (ok) { close(modal); load(getQ()); }
+
+    const json = await res.json();
+    if (json.ok) {
+      showToast(id ? "Program updated." : "Program created.", "success");
+      closeModal(modal);
+      load(getQ());
+    } else {
+      showToast(json.error || "Operation failed", "error");
+    }
   });
 
-  // Search
   let t = null;
-  searchIn?.addEventListener('input', ()=>{
+  searchIn?.addEventListener('input', () => {
     clearTimeout(t);
-    t = setTimeout(()=> load(getQ()), 250);
-  });
-  searchIn?.addEventListener('keydown', (e)=>{
-    if (e.key === 'Enter') { e.preventDefault(); load(getQ()); }
+    t = setTimeout(() => load(getQ()), 250);
   });
 
-  // Init
   load().catch(console.error);
 })();

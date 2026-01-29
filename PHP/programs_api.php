@@ -42,13 +42,18 @@ $method = $_SERVER['REQUEST_METHOD'];
 // -----------------------------------------------------------
 if ($method === 'GET') {
     $q = trim($_GET['q'] ?? '');
-    $sql = "SELECT id, code, name, description, created_at FROM programs WHERE is_archived = 0";
     if ($q !== '') {
-        $sql .= " AND (code LIKE :q OR name LIKE :q)";
-        $stmt = $pdo->prepare($sql . " ORDER BY name");
-        $stmt->execute([':q' => "%$q%"]);
+        $sql = "SELECT id, code, name, description, created_at FROM programs 
+                WHERE is_archived = 0 
+                AND (code LIKE :q1 OR name LIKE :q2)
+                ORDER BY name";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([':q1' => "%$q%", ':q2' => "%$q%"]);
     } else {
-        $stmt = $pdo->query($sql . " ORDER BY name");
+        $sql = "SELECT id, code, name, description, created_at FROM programs 
+                WHERE is_archived = 0 
+                ORDER BY name";
+        $stmt = $pdo->query($sql);
     }
     jexit(true, $stmt->fetchAll());
 }
