@@ -193,12 +193,18 @@ body.sidebar-collapsed, body.sidebar-collapsed * {
 .btn-primary:hover { filter: brightness(.95); }
 
 /* ---------------- Modal ---------------- */
-.modal { position: fixed; inset: 0; z-index: 50; }
+.modal { 
+  position: fixed; inset: 0; z-index: 50; 
+  display: flex; align-items: center; justify-content: center;
+  transition: visibility 0.3s;
+}
 .modal.hidden { display: none; }
 
 .modal-backdrop {
   position: absolute; inset: 0;
-  background: rgba(17,24,39,.5); /* gray-900/50 */
+  background: rgba(15, 23, 42, 0.6); /* slate-900/60 */
+  backdrop-blur: 4px;
+  animation: modalFadeIn 0.3s ease-out forwards;
 }
 
 .modal-card {
@@ -206,12 +212,38 @@ body.sidebar-collapsed, body.sidebar-collapsed * {
   z-index: 1;
   width: 24rem;
   max-width: calc(100% - 2rem);
-  margin: 10vh auto 0;
   background: #fff;
   border: 1px solid var(--stroke);
-  border-radius: .9rem;
+  border-radius: 1.5rem;
   padding: 1.25rem;
-  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  margin: 0;
+  animation: modalZoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Closing States */
+.modal.closing .modal-backdrop {
+  animation: modalFadeOut 0.15s ease-in forwards;
+}
+.modal.closing .modal-card {
+  animation: modalZoomOut 0.15s ease-in forwards;
+}
+
+@keyframes modalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes modalZoomIn {
+  from { opacity: 0; transform: scale(0.9) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes modalZoomOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(0.95) translateY(10px); }
 }
 /* ---------- Programs page chips ---------- */
 .chip-row {

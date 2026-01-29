@@ -204,8 +204,15 @@
 
         progContainer.innerHTML = (ai_analytics.stats || []).map(s => {
           const p = s.percentage || 0;
-          return `<div class="ai-progress-item flex items-center gap-6"><div class="flex-1"><div class="flex justify-between items-center mb-2"><span class="text-sm font-bold text-slate-700">${s.program}</span><span class="text-[10px] font-black tracking-widest text-indigo-600">${p}% COMPLETE</span></div><div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden"><div class="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-in-out" style="width: ${p}%"></div></div></div></div>`;
+          return `<div class="ai-progress-item flex items-center gap-6"><div class="flex-1"><div class="flex justify-between items-center mb-2"><span class="text-sm font-bold text-slate-700">${s.program}</span><span class="text-[10px] font-black tracking-widest text-indigo-600">${p}% COMPLETE</span></div><div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden"><div class="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-in-out progress-bar-fill" data-percent="${p}" style="width: 0%"></div></div></div></div>`;
         }).join('');
+
+        // Trigger fill animation
+        setTimeout(() => {
+          document.querySelectorAll('.progress-bar-fill').forEach(bar => {
+            bar.style.width = bar.getAttribute('data-percent') + '%';
+          });
+        }, 100);
       } catch (err) { console.warn('AI load error:', err); }
     };
     
