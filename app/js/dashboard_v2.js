@@ -76,15 +76,61 @@
 
       // Legend
       $('#donutCenter').textContent = donut.center;
-      $('#donutLegend').innerHTML = (donut.labels || []).map((l, i) => `
-        <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all group" data-tooltip="${l}">
-          <div class="flex items-center gap-3 overflow-hidden">
-            <div class="w-3 h-3 rounded-full shadow-sm flex-none" style="background:${bgColors[i]}"></div>
-            <span class="text-sm font-bold text-slate-600 truncate">${donut.codes[i] || l}</span>
-          </div>
-          <span class="text-xs font-black px-2 py-1 rounded-lg bg-white text-slate-800 shadow-sm border border-slate-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors flex-none">${donut.data[i] ?? 0}</span>
-        </div>
-      `).join('');
+      
+      const itemsPerPage = 4;
+      const totalLegendPages = Math.ceil((donut.labels || []).length / itemsPerPage);
+      let currentLegendPage = 0;
+
+      const renderLegend = () => {
+        const legendContainer = $('#donutLegend');
+        const paginationContainer = $('#legendPagination');
+        if (!legendContainer) return;
+
+        const pages = [];
+        for (let i = 0; i < totalLegendPages; i++) {
+          const start = i * itemsPerPage;
+          const end = start + itemsPerPage;
+          const items = (donut.labels || []).slice(start, end);
+          
+          const pageHtml = `
+            <div class="legend-page">
+              ${items.map((l, idx) => {
+                const globalIdx = start + idx;
+                return `
+                  <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all group" data-tooltip="${l}">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                      <div class="w-3 h-3 rounded-full shadow-sm flex-none" style="background:${bgColors[globalIdx]}"></div>
+                      <span class="text-sm font-bold text-slate-600 truncate">${donut.codes[globalIdx] || l}</span>
+                    </div>
+                    <span class="text-xs font-black px-2 py-1 rounded-lg bg-white text-slate-800 shadow-sm border border-slate-100 group-hover:bg-indigo-600 group-hover:text-white transition-colors flex-none">${donut.data[globalIdx] ?? 0}</span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+          pages.push(pageHtml);
+        }
+
+        legendContainer.innerHTML = pages.join('');
+        legendContainer.style.transform = `translateX(-${currentLegendPage * 100}%)`;
+
+        if (totalLegendPages > 1) {
+          paginationContainer.innerHTML = `
+            <div class="flex items-center justify-center gap-6 pt-6">
+              <button id="legendPrev" class="cal-btn" ${currentLegendPage === 0 ? 'disabled style="opacity:0.3"' : ''}><i class="fa-solid fa-chevron-left text-xs"></i></button>
+              <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">${currentLegendPage + 1} <span class="mx-1 text-slate-200">/</span> ${totalLegendPages}</span>
+              <button id="legendNext" class="cal-btn" ${currentLegendPage === totalLegendPages - 1 ? 'disabled style="opacity:0.3"' : ''}><i class="fa-solid fa-chevron-right text-xs"></i></button>
+            </div>
+          `;
+
+          $('#legendPrev').onclick = () => { if (currentLegendPage > 0) { currentLegendPage--; renderLegend(); }};
+          $('#legendNext').onclick = () => { if (currentLegendPage < totalLegendPages - 1) { currentLegendPage++; renderLegend(); }};
+        } else {
+          paginationContainer.innerHTML = '';
+        }
+      };
+
+      renderLegend();
     }
 
     // Render Notices & Calendar
@@ -202,9 +248,23 @@
           typeText(actionEl, aiData.action || '', 8);
         });
 
-        progContainer.innerHTML = (ai_analytics.stats || []).map(s => {
+        // SORT BY RISK: Lowest percentage first
+        const sortedStats = (ai_analytics.stats || []).sort((a, b) => (a.percentage || 0) - (b.percentage || 0));
+
+        progContainer.innerHTML = sortedStats.map(s => {
           const p = s.percentage || 0;
-          return `<div class="ai-progress-item flex items-center gap-6"><div class="flex-1"><div class="flex justify-between items-center mb-2"><span class="text-sm font-bold text-slate-700">${s.program}</span><span class="text-[10px] font-black tracking-widest text-indigo-600">${p}% COMPLETE</span></div><div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden"><div class="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-in-out progress-bar-fill" data-percent="${p}" style="width: 0%"></div></div></div></div>`;
+          const statusText = p >= 100 ? `${p}% COMPLETE` : `${p}%`;
+          return `<div class="ai-progress-item flex items-center gap-6" data-search="${s.program.toLowerCase()} ${s.code ? s.code.toLowerCase() : ''}">
+                    <div class="flex-1">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-sm font-bold text-slate-700">${s.program}</span>
+                            <span class="text-[10px] font-black tracking-widest text-indigo-600">${statusText}</span>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                            <div class="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-in-out progress-bar-fill" data-percent="${p}" style="width: 0%"></div>
+                        </div>
+                    </div>
+                  </div>`;
         }).join('');
 
         // Trigger fill animation
@@ -213,6 +273,44 @@
             bar.style.width = bar.getAttribute('data-percent') + '%';
           });
         }, 100);
+
+        // SCROLL INDICATOR LOGIC
+        const scrollHint = $('#scrollHint');
+        const progWrap = $('#aiProgressBars');
+        if (scrollHint && progWrap) {
+            const updateScrollHint = () => {
+                const isScrollable = progWrap.scrollHeight > progWrap.clientHeight;
+                const isAtBottom = progWrap.scrollHeight - progWrap.scrollTop <= progWrap.clientHeight + 10;
+                
+                // Show if more than 6 items OR specifically if scrollable
+                if (sortedStats.length > 6 && !isAtBottom) {
+                    scrollHint.classList.remove('hidden');
+                } else {
+                    scrollHint.classList.add('hidden');
+                }
+            };
+            
+            progWrap.addEventListener('scroll', updateScrollHint);
+            updateScrollHint();
+            // Re-check after animation
+            setTimeout(updateScrollHint, 1100);
+        }
+
+        // LIVE FILTER LOGIC - ALWAYS VISIBLE
+        const searchContainer = $('#aiSearchContainer');
+        const searchInput = $('#aiProgSearch');
+
+        if (searchContainer && searchInput) {
+          searchContainer.classList.remove('opacity-0', 'scale-95', 'pointer-events-none');
+          
+          searchInput.addEventListener('input', () => {
+            const val = searchInput.value.toLowerCase();
+            document.querySelectorAll('.ai-progress-item').forEach(item => {
+              const searchStr = item.getAttribute('data-search') || '';
+              item.style.display = searchStr.includes(val) ? 'flex' : 'none';
+            });
+          });
+        }
       } catch (err) { console.warn('AI load error:', err); }
     };
     

@@ -68,8 +68,10 @@ if ($a === 'export' && $m === 'GET') {
     $w = [];
     $args = [];
     if ($q !== '') {
-        $w[] = "(team LIKE :q OR purpose LIKE :q OR notes LIKE :q)";
-        $args[':q'] = "%{$q}%";
+        $w[] = "(team LIKE :q1 OR purpose LIKE :q2 OR notes LIKE :q3)";
+        $args[':q1'] = "%{$q}%";
+        $args[':q2'] = "%{$q}%";
+        $args[':q3'] = "%{$q}%";
     }
     if (in_array($st, ['planned', 'ongoing', 'completed', 'cancelled'], true)) {
         $w[] = "status=:st";
@@ -114,8 +116,10 @@ if ($m === 'GET' && $a === 'list') {
     $w = [];
     $args = [];
     if ($q !== '') {
-        $w[] = "(team LIKE :q OR purpose LIKE :q OR notes LIKE :q)";
-        $args[':q'] = "%{$q}%";
+        $w[] = "(team LIKE :q1 OR purpose LIKE :q2 OR notes LIKE :q3)";
+        $args[':q1'] = "%{$q}%";
+        $args[':q2'] = "%{$q}%";
+        $args[':q3'] = "%{$q}%";
     }
     if (in_array($st, ['planned', 'ongoing', 'completed', 'cancelled'], true)) {
         $w[] = "status=:st";

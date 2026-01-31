@@ -15,10 +15,10 @@ function active($page, $current)
   <title>Accreditation Management System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="../app/css/dashboard.css?v=1" />
-  <link rel="stylesheet" href="../app/css/dashboard.v2.css" />
+  <link rel="stylesheet" href="../app/css/dashboard.css?v=<?= filemtime(__DIR__.'/../app/css/dashboard.css') ?>" />
+  <link rel="stylesheet" href="../app/css/dashboard.v2.css?v=<?= filemtime(__DIR__.'/../app/css/dashboard.v2.css') ?>" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <link rel="stylesheet" href="../app/css/dashboard.layout.css?v=1" />
+  <link rel="stylesheet" href="../app/css/dashboard.layout.css?v=<?= filemtime(__DIR__.'/../app/css/dashboard.layout.css') ?>" />
 </head>
 
 <body class="bg-gray-100 text-gray-800">
@@ -93,27 +93,45 @@ function active($page, $current)
           <!-- Program Progress Column -->
           <div class="lg:col-span-7 p-8 lg:p-10">
             <div class="flex items-center justify-between mb-8">
-              <h3 class="text-lg font-bold text-slate-900">Program Status</h3>
-              <span class="text-[10px] font-bold bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full">Real-time Compliance</span>
+              <div class="flex flex-col gap-1">
+                <h3 class="text-lg font-bold text-slate-900">Program Status</h3>
+                <span class="text-[10px] font-bold text-indigo-600/60 uppercase tracking-widest">Live Compliance Tracking</span>
+              </div>
+              
+              <div class="flex items-center gap-3">
+                <div id="aiSearchContainer" class="flex items-center bg-slate-50 border border-slate-100 rounded-xl px-3 py-1.5 transition-all duration-300">
+                    <i class="fa-solid fa-magnifying-glass text-[10px] text-slate-400 mr-2"></i>
+                    <input id="aiProgSearch" type="text" placeholder="Filter programs..." 
+                        class="bg-transparent border-none outline-none text-xs font-bold text-slate-600 w-28 placeholder:text-slate-300" />
+                </div>
+                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-100/50">
+                    <i class="fa-solid fa-filter text-[10px]"></i>
+                </div>
+              </div>
             </div>
-            <div id="aiProgressBars" class="grid grid-cols-1 gap-10">
-              <!-- Skeleton Items -->
-              <div class="space-y-4">
-                <div class="flex justify-between"><div class="skeleton-text w-32"></div><div class="skeleton-text w-10"></div></div>
-                <div class="skeleton-text skeleton-bar w-full"></div>
-              </div>
-              <div class="space-y-4">
-                <div class="flex justify-between"><div class="skeleton-text w-40"></div><div class="skeleton-text w-10"></div></div>
-                <div class="skeleton-text skeleton-bar w-full"></div>
-              </div>
-              <div class="space-y-4">
-                <div class="flex justify-between"><div class="skeleton-text w-36"></div><div class="skeleton-text w-10"></div></div>
-                <div class="skeleton-text skeleton-bar w-full"></div>
-              </div>
-              <div class="space-y-4">
-                <div class="flex justify-between"><div class="skeleton-text w-44"></div><div class="skeleton-text w-10"></div></div>
-                <div class="skeleton-text skeleton-bar w-full"></div>
-              </div>
+            <div class="relative">
+                <div id="aiProgressBars" class="grid grid-cols-1 gap-10">
+                  <!-- Skeleton Items -->
+                  <div class="space-y-4">
+                    <div class="flex justify-between"><div class="skeleton-text w-32"></div><div class="skeleton-text w-10"></div></div>
+                    <div class="skeleton-text skeleton-bar w-full"></div>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="flex justify-between"><div class="skeleton-text w-40"></div><div class="skeleton-text w-10"></div></div>
+                    <div class="skeleton-text skeleton-bar w-full"></div>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="flex justify-between"><div class="skeleton-text w-36"></div><div class="skeleton-text w-10"></div></div>
+                    <div class="skeleton-text skeleton-bar w-full"></div>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="flex justify-between"><div class="skeleton-text w-44"></div><div class="skeleton-text w-10"></div></div>
+                    <div class="skeleton-text skeleton-bar w-full"></div>
+                  </div>
+                </div>
+                <div id="scrollHint" class="scroll-indicator hidden">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </div>
             </div>
           </div>
         </div>
@@ -122,13 +140,20 @@ function active($page, $current)
   </section>
 
   <section class="grid-2 section">
-    <div class="card">
-      <div class="card-title text-slate-800 font-bold">Evidence by Program</div>
+    <div class="card flex flex-col h-full">
+      <div class="card-title text-slate-800 font-bold mb-6">Evidence by Program</div>
       <div class="donut-wrap mb-8">
         <div class="chart-wrap"><canvas id="chartDonut" width="300" height="300"></canvas></div>
         <div class="donut-center font-black text-slate-900" id="donutCenter">0</div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="donutLegend"></div>
+      
+      <!-- Legend Viewport -->
+      <div id="legendViewport" class="flex-grow overflow-hidden relative">
+        <div id="donutLegend" class="flex transition-transform duration-500 ease-in-out h-full"></div>
+      </div>
+
+      <!-- Legend Pagination -->
+      <div id="legendPagination" class="flex-shrink-0"></div>
     </div>
     <div class="card">
       <div class="card-title">
@@ -191,9 +216,9 @@ function active($page, $current)
     </div>
   </div>
 
-  <script src="../app/js/dashboard.js?v=2"></script>
-  <script src="../app/js/dashboard_counts.js?v=1"></script>
-  <script src="../app/js/dashboard_v2.js"></script>
+  <script src="../app/js/dashboard.js?v=<?= filemtime(__DIR__.'/../app/js/dashboard.js') ?>"></script>
+  <script src="../app/js/dashboard_counts.js?v=<?= filemtime(__DIR__.'/../app/js/dashboard_counts.js') ?>"></script>
+  <script src="../app/js/dashboard_v2.js?v=<?= filemtime(__DIR__.'/../app/js/dashboard_v2.js') ?>"></script>
 </body>
 
 </html>

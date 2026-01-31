@@ -16,7 +16,7 @@ function active($page, $current)
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../app/css/dashboard.css?v=3" />
+    <link rel="stylesheet" href="../app/css/dashboard.css?v=<?= filemtime(__DIR__.'/../app/css/dashboard.css') ?>" />
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
@@ -159,7 +159,7 @@ function active($page, $current)
     <div id="toastContainer" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 items-center pointer-events-none"></div>
 
     <script src="../app/js/dashboard.js"></script>
-    <script src="../app/js/programs.js?v=10"></script>
+    <script src="../app/js/programs.js?v=<?= filemtime(__DIR__.'/../app/js/programs.js') ?>"></script>
 </body>
 
 </html>

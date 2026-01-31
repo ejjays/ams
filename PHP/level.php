@@ -12,42 +12,22 @@ function active($page, $current)
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Level • Rates</title>
+  <title>Levels • Accreditation</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="../app/css/dashboard.css?v=1" />
-
+  <link rel="stylesheet" href="../app/css/dashboard.css?v=<?= filemtime(__DIR__.'/../app/css/dashboard.css') ?>" />
   <style>
-    /* ... (ibang rules sa taas) ... */
-
-    .level-card {
-      /* TINANGGAL: min-height: 220px; */
-      /* Ang .panel class mula sa JS na ang magbibigay ng padding (px-4 py-1.5) */
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-      /* Siguraduhin na umookupa ng buong lapad */
+    body { font-family: 'Inter', sans-serif; }
+    .tag-mode [data-action="open-tag-modal"] {
+        animation: pulse-blue 2s infinite;
     }
-
-    /* ... (ibang rules) ... */
-
-    /* TINANGGAL: Lahat ng margin-top rules para sa [data-chips-for] */
-    /* Dahil ang chips ay nasa loob na ng .level-head */
-
-    .chips-row {
-      /* Ito ay hindi na ginagamit sa levels.js */
+    @keyframes pulse-blue {
+        0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
     }
-
-    /* Ensure consistent height for the header row */
-    #levelList .level-head {
-      min-height: 44px;
-      /* */
-      width: 100%;
-    }
-
-    /* ... (ibang rules sa baba) ... */
   </style>
-
 </head>
 
 <body class="bg-gray-100 text-gray-800">
@@ -55,107 +35,146 @@ function active($page, $current)
     <?php include __DIR__ . '/partials/sidebar.php'; ?>
 
     <main class="flex-1 overflow-auto">
-      <!-- Header: title + Verify Rates (ONLY) -->
-      <header class="px-10 py-6 border-b bg-white">
+      <!-- Header -->
+      <header class="px-10 py-8 border-b bg-white/80 backdrop-blur-md sticky top-0 z-30">
         <div class="flex items-center justify-between gap-4 flex-wrap">
-          <h1 class="text-2xl font-semibold">LEVEL</h1>
+          <div class="space-y-1">
+            <h1 class="text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3 uppercase">
+              <span>LEVELS</span>
+              <span class="w-2 h-2 rounded-full bg-blue-600 shadow-lg shadow-blue-200"></span>
+            </h1>
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-[0.2em] ml-0.5">Hierarchy & Program Tagging</p>
+          </div>
 
           <div class="flex items-center gap-3">
-            <button id="openCreateLevel"
-              class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-medium shadow">
-              <i class="fa-solid fa-plus mr-1"></i> Create Level
+            <button id="levelEditToggleBtn"
+              class="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-600 hover:text-blue-600 transition-all active:scale-95 shadow-sm"
+              title="Toggle Edit Mode">
+              <i class="fa-solid fa-pen-to-square"></i>
             </button>
             <button id="openTagProgramLevel"
-              class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-medium shadow">
-              <i class="fa-solid fa-tag mr-1"></i> Tag Program
+              class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-white border border-slate-200 text-slate-600 text-sm font-black uppercase tracking-widest hover:bg-slate-50 transition-all active:scale-95 shadow-sm">
+              <i class="fa-solid fa-tag text-lg"></i>
+              <span>Tag Program</span>
             </button>
-            <button id="levelEditToggleBtn"
-              class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-medium shadow"
-              title="Toggle edit mode">
-              <i class="fa-solid fa-pen"></i>
+            <button id="openCreateLevel"
+              class="inline-flex items-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-700 to-indigo-600 hover:from-blue-800 hover:to-indigo-700 text-white text-sm font-black uppercase tracking-widest shadow-xl shadow-blue-200 transition-all active:scale-95">
+              <i class="fa-solid fa-plus text-lg"></i>
+              <span>Create Level</span>
             </button>
           </div>
         </div>
       </header>
-      <!-- Back link below top bar -->
-      <div class="px-10 pt-4">
+
+      <!-- Back link -->
+      <div class="px-10 pt-6">
         <a href="#" onclick="history.back(); return false;"
-          class="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:underline">
-          <i class="fa-solid fa-arrow-left"></i>
-          <span>Back</span>
+          class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 group transition-all">
+          <i class="fa-solid fa-arrow-left transition-transform group-hover:-translate-x-1"></i>
+          <span>Return to Instruments</span>
         </a>
       </div>
 
-      <section class="px-6 py-6">
-        <div id="levelList" class="flex flex-col gap-4">
+      <section class="px-10 py-8 max-w-6xl mx-auto">
+        <div id="levelList" class="flex flex-col gap-5">
+            <!-- Items load here -->
         </div>
       </section>
 
       <!-- Create/Update Level Modal -->
       <div id="levelModal" class="modal hidden">
-        <div class="modal-backdrop" data-close="true"></div>
-        <div class="modal-card">
-          <div class="flex items-center justify-between mb-3">
-            <h3 class="text-lg font-semibold">Level</h3>
-            <button id="levelCloseX" class="text-gray-500 hover:text-gray-700" title="Close">
+        <div class="modal-backdrop bg-slate-900/50 backdrop-blur-sm" data-close="true"></div>
+        <div class="modal-card w-[520px] border-0 rounded-[2rem] shadow-2xl overflow-hidden p-0">
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-blue-700 to-indigo-600 px-8 py-6 flex items-center justify-between text-white">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                <i class="fa-solid fa-layer-group text-lg"></i>
+              </div>
+              <div>
+                <h3 id="levelModalTitle" class="text-xl font-black tracking-tight uppercase">Level</h3>
+                <p class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Accreditation stage</p>
+              </div>
+            </div>
+            <button id="levelCloseX" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors" title="Close">
               <i class="fa-solid fa-xmark"></i>
             </button>
           </div>
-          <form id="levelCreateForm" class="space-y-3">
+
+          <!-- Modal Body -->
+          <form id="levelCreateForm" class="p-8 space-y-6">
             <input type="hidden" id="level_id" name="id" />
-            <div>
-              <label for="level_name" class="block text-sm font-medium text-slate-700 mb-1">Level</label>
-              <input id="level_name" name="name" class="w-full border rounded-md px-3 py-2" placeholder="Level" required />
+            
+            <div class="space-y-2">
+              <label for="level_name" class="block text-xs font-black uppercase tracking-widest text-slate-500 ml-1">Level Name</label>
+              <input id="level_name" name="name" 
+                class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-slate-700 font-bold outline-none focus:ring-4 focus:ring-blue-600/10 focus:border-blue-600 transition-all" 
+                placeholder="e.g., Level III, Candidate Status" required />
             </div>
-            <div class="flex justify-between pt-2">
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
               <button type="button" id="levelCreateCancel"
-                class="px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white">Cancel</button>
+                class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all active:scale-95">Cancel</button>
               <button type="submit" id="levelCreateSubmit"
-                class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-medium">Save</button>
+                class="px-8 py-3 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-blue-200 transition-all active:scale-95">Save Level</button>
             </div>
           </form>
         </div>
       </div>
 
-
-
       <!-- Tag Program Modal -->
-      <div id="tagProgramLevelModal" class="fixed inset-0 bg-black/40 z-50 hidden">
-        <div class="absolute inset-0 flex items-center justify-center p-4">
-          <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
-            <div class="flex items-center justify-between border-b px-4 py-3">
-              <h3 class="text-lg font-semibold">Tag Program</h3>
-              <button type="button" id="tagProgramLevelModalClose" class="text-slate-500 hover:text-slate-700">
-                <i class="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-            <form id="tagProgramLevelModalForm" class="px-4 py-4 space-y-3">
-              <div id="tagProgramLevelContext" class="text-xs text-slate-500 mb-2"></div>
+      <div id="tagProgramLevelModal" class="modal hidden">
+        <div class="modal-backdrop bg-slate-900/50 backdrop-blur-sm" data-close="true"></div>
+        <div class="modal-card w-[480px] border-0 rounded-[2rem] shadow-2xl overflow-hidden p-0">
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-blue-700 to-indigo-600 px-8 py-6 flex items-center justify-between text-white">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center backdrop-blur-md">
+                <i class="fa-solid fa-tag text-lg"></i>
+              </div>
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1" for="tagProgramLevelModalProgram">Program</label>
-                <select id="tagProgramLevelModalProgram" required class="w-full border rounded-md px-3 py-2"></select>
+                <h3 class="text-xl font-black tracking-tight uppercase">Tag Program</h3>
+                <p id="tagProgramLevelContext" class="text-[10px] font-bold text-white/60 uppercase tracking-widest"></p>
               </div>
-
-              <div class="flex justify-end gap-2 pt-2">
-                <button type="button" id="tagProgramLevelModalCancel" class="px-4 py-2 rounded-lg bg-gray-400 hover:bg-gray-500 text-white">Cancel</button>
-                <button type="submit" class="px-4 py-2 rounded-lg bg-blue-700 hover:bg-blue-800 text-white font-medium">Save</button>
-              </div>
-            </form>
+            </div>
+            <button id="tagProgramLevelModalClose" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
           </div>
+
+          <!-- Modal Body -->
+          <form id="tagProgramLevelModalForm" class="p-8 space-y-6">
+            <div class="space-y-2">
+              <label class="block text-xs font-black uppercase tracking-widest text-slate-500 ml-1" for="tagProgramLevelModalProgram">Select Program</label>
+              <div class="relative">
+                <select id="tagProgramLevelModalProgram" required 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-3 text-slate-700 font-bold outline-none focus:ring-4 focus:ring-blue-600/10 transition-all appearance-none cursor-pointer shadow-inner">
+                </select>
+                <i class="fa-solid fa-chevron-down absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"></i>
+              </div>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+                <button type="button" id="tagProgramLevelModalCancel" class="px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all active:scale-95">Cancel</button>
+                <button type="submit" class="px-8 py-3 rounded-2xl bg-blue-700 hover:bg-blue-800 text-white text-xs font-black uppercase tracking-widest shadow-xl shadow-blue-200 transition-all active:scale-95">Link Program</button>
+            </div>
+          </form>
         </div>
       </div>
 
     </main>
   </div>
-  <script src="../app/js/levels.js?v=5"></script>
+  <script src="../app/js/levels.js?v=<?= filemtime(__DIR__.'/../app/js/levels.js') ?>"></script>
 
   <script>
-    // Toggle tag-mode: show/hide per-card tag icons only when top bar "Tag Program" is pressed
     (function() {
       const btn = document.getElementById('openTagProgramLevel');
       if (btn) {
         btn.addEventListener('click', function() {
           document.body.classList.toggle('tag-mode');
+          btn.classList.toggle('bg-blue-600', document.body.classList.contains('tag-mode'));
+          btn.classList.toggle('text-white', document.body.classList.contains('tag-mode'));
+          btn.classList.toggle('border-blue-600', document.body.classList.contains('tag-mode'));
         });
       }
     })();

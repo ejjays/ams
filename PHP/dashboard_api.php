@@ -72,6 +72,7 @@ if ($action === 'summary') {
           JOIN level_programs lp     ON lp.level_id = s.level_id
           GROUP BY lp.program_id
         ) c ON c.program_id = p.id
+        WHERE p.is_archived = 0
         ORDER BY p.id
       ";
       $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
@@ -242,6 +243,7 @@ function get_ai_analytics($pdo) {
             SELECT 
                 p.id as program_id,
                 p.name as program,
+                p.code as code,
                 COALESCE(req.total, 0) as total_required,
                 COALESCE(links.uploaded_count, 0) as uploaded_count
             FROM programs p
@@ -264,6 +266,7 @@ function get_ai_analytics($pdo) {
                 JOIN indicator_document_links l ON l.indicator_id = il.id
                 GROUP BY lp.program_id
             ) links ON links.program_id = p.id
+            WHERE p.is_archived = 0
         ";
         $stmt = $pdo->query($sql);
         $stats = $stmt->fetchAll(PDO::FETCH_ASSOC);

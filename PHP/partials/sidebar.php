@@ -273,4 +273,4 @@ $prettyRole = $labels[$roleKey] ?? ($roleKey ? ucwords(str_replace('_', ' ', $ro
   </div>
 </aside>
 
-<script src="../app/js/sidebar.js?v=5"></script>
+<script src="../app/js/sidebar.js?v=<?= filemtime(__DIR__.'/../../app/js/sidebar.js') ?>"></script>

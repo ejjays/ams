@@ -455,6 +455,7 @@
     const res = await fetch(`${API}?action=save`, { method: 'POST', body: fd });
     const json = await res.json();
     if (!json.ok) return showToast(json.error || 'Save failed.');
+    showToast('Document saved successfully!', 'success');
     hideModal(modal);
     load().catch(console.error);
   });
@@ -474,6 +475,7 @@
     });
     const json = await res.json();
     if (!json.ok) return showToast(json.error || 'Share failed.');
+    showToast('Document shared successfully!', 'success');
     hideModal(shareModal);
     if (currentTab === 'shared') load().catch(console.error);
   });
@@ -502,6 +504,7 @@
     });
     const json = await res.json();
     if (!json.ok) return showToast(json.error || 'Review failed.');
+    showToast('Review submitted successfully!', 'success');
     hideModal(reviewModal);
     load().catch(console.error);
   });

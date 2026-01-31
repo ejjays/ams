@@ -20,6 +20,7 @@ class AIService {
                 if (count($parts) === 2) {
                     $key = trim($parts[0]);
                     $val = trim($parts[1]);
+                    $val = trim($val, "\"'"); // Strip quotes
                     if ($key === 'GEMINI_API_KEY') self::$geminiKey = $val;
                     if ($key === 'GROQ_API_KEY') self::$groqKey = $val;
                 }

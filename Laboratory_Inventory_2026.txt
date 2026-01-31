@@ -1,0 +1,3 @@
+This document contains the complete inventory of the Computer Science and Physics laboratories. 
+It lists the new high-performance workstations, specialized networking equipment, and safety tools. 
+All devices have been calibrated and inspected according to the standard institutional safety protocols.

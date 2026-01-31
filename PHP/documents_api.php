@@ -124,13 +124,14 @@ if ($method === 'GET' && $action === 'list') {
         ";
 
         if ($tab === 'mine') {
-            // OWNED DOCUMENTS
+            // OWNED DOCUMENTS + GLOBAL SAMPLES (1001-1004)
             $sql = "
                 SELECT d.id, d.title, d.comment, d.original_name, d.stored_name, d.file_ext,
                        d.mime_type, d.file_size, d.created_at, $ratingsSubQuery
                 FROM documents d
-                WHERE d.owner_user_id = :uid
+                WHERE (d.owner_user_id = :uid OR d.id BETWEEN 1001 AND 1004)
                   AND d.archived_at IS NULL
+                  AND d.title != 'SYSTEM_DATA_DO_NOT_DELETE'
             ";
             $params = [':uid' => $userId, ':current_user_id' => $userId];
 
@@ -422,6 +423,34 @@ if ($method === 'POST' && $action === 'review') {
     ]);
 
     jexit(true, ['reviewed' => true]);
+}
+
+// ---------- AI RE-TAG (ON DEMAND) ----------
+if ($method === 'GET' && $action === 're_tag') {
+    $id = (int)($_GET['id'] ?? 0);
+    if ($id <= 0) jexit(false, null, 'Missing id.');
+
+    $stmt = $pdo->prepare("SELECT title FROM documents WHERE id = :id LIMIT 1");
+    $stmt->execute([':id' => $id]);
+    $doc = $stmt->fetch();
+
+    if (!$doc) jexit(false, null, 'Document not found.');
+
+    require_once __DIR__ . '/services/AIService.php';
+    try {
+        $indicators = $pdo->query("SELECT id, title FROM indicator_labels LIMIT 50")->fetchAll(PDO::FETCH_ASSOC);
+        $suggestedId = AIService::suggestIndicator($doc['title'], $indicators);
+        
+        if ($suggestedId) {
+            $pdo->prepare("INSERT IGNORE INTO indicator_document_links (indicator_id, document_id, uploaded_by) VALUES (?, ?, ?)")
+                ->execute([$suggestedId, $id, $userId]);
+            jexit(true, ['tagged' => true, 'tag_id' => $suggestedId]);
+        } else {
+            jexit(false, null, 'AI could not find a suitable match.');
+        }
+    } catch (Throwable $e) {
+        jexit(false, null, "AI Error: " . $e->getMessage());
+    }
 }
 
 // ---------- AI INSIGHT (ON DEMAND) ----------

@@ -16,7 +16,7 @@ function active($page, $current)
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="../app/css/dashboard.css?v=3" />
+    <link rel="stylesheet" href="../app/css/dashboard.css?v=<?= filemtime(__DIR__.'/../app/css/dashboard.css') ?>" />
     <style>
         body { font-family: 'Inter', sans-serif; }
     </style>
@@ -62,7 +62,7 @@ function active($page, $current)
                 </div>
             </div>
 
-            <section class="px-10 pt-4">
+            <section class="px-10 pt-4 pb-24">
                 <div id="docList" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                 </div>
             </section>
@@ -271,7 +271,7 @@ function active($page, $current)
         </div>
     </div>
 
-    <script src="../app/js/documents.js?v=7"></script>
+    <script src="../app/js/documents.js?v=<?= filemtime(__DIR__.'/../app/js/documents.js') ?>"></script>
 
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="fixed top-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-3 items-center pointer-events-none"></div>

@@ -1,21 +1,4 @@
-/* app/js/levels.js  — rebuilt (vanilla JS + Tailwind)
- * Features:
- * - Render Level cards from levels_api.php?instrument_id=...
- * - Show tagged Programs as chips per card (single source of truth: level_programs_api.php)
- * - Per-card Tag button opens Add-only modal
- * - Untag via chip × (refreshes only that card)
- * - Create/Edit/Delete Level (uses existing form & modal in level.php)
- *
- * API contracts in this project:
- *   GET  levels_api.php?instrument_id=:iid              → { ok, data:{ items:[{id,name,description,weight?}] } }
- *   POST levels_api.php  (form-encoded)                 → create/update (expects id?, instrument_id, name, description, weight?)
- *   DEL  levels_api.php?id=:id                          → delete
- *   GET  level_programs_api.php?level_id=:id            → { ok, data:[ { id or program_id, name } ] }
- *   POST level_programs_api.php  (JSON)                 → { level_id, program_id }  (idempotent)
- *   DEL  level_programs_api.php?level_id=:id&program_id=:pid → untag
- *   GET  programs_api.php?action=list                   → { ok, data:[ { program_id, name } ] }
- */
-
+// app/js/levels.js — Modern list + program tagging for Levels
 (function(){
   const API_LEVELS    = 'levels_api.php';
   const API_LP        = 'level_programs_api.php';
@@ -33,7 +16,6 @@
   const form          = document.getElementById('levelCreateForm');
   const idIn          = document.getElementById('level_id');
   const nameIn        = document.getElementById('level_name');
-  const weightIn      = document.getElementById('level_weight');
   const tagModeBtn    = document.getElementById('openTagProgramLevel');
 
   // Helpers
@@ -41,15 +23,17 @@
     try { return await res.json(); } catch { return { ok:false, error:`HTTP ${res.status} ${res.statusText}` }; }
   }
   function esc(s){ const d=document.createElement('div'); d.textContent=String(s??''); return d.innerHTML; }
-  function spinner(w=24,h=24){ return `<svg aria-hidden="true" class="animate-spin" width="${w}" height="${h}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity=".25"></circle><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" fill="none"></path></svg>`; }
+  function spinner(w=16,h=16){ return `<svg aria-hidden="true" class="animate-spin text-blue-600" width="${w}" height="${h}" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" opacity=".25"></circle><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" stroke-width="4" fill="none"></path></svg>`; }
 
   // Chips
   function chipHtml(levelId, prog){
     const pid = Number(prog.program_id ?? prog.id);
     const name = esc(prog.name ?? '');
-    return `<span class="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-gray-100 program-chip">
-      <span class="program-name">${name}</span>
-      <button class="rounded hover:bg-gray-200 px-1" aria-label="Untag" data-action="untag" data-level-id="${levelId}" data-program-id="${pid}">×</button>
+    return `<span class="inline-flex items-center gap-2 px-3 py-1.5 text-[10px] font-black uppercase tracking-widest rounded-xl bg-blue-50 text-blue-700 ring-1 ring-blue-100 group/chip">
+      <span>${name}</span>
+      <button class="w-4 h-4 flex items-center justify-center rounded-full hover:bg-blue-200 transition-colors" aria-label="Untag" data-action="untag" data-level-id="${levelId}" data-program-id="${pid}">
+        <i class="fa-solid fa-xmark text-[8px]"></i>
+      </button>
     </span>`;
   }
 
@@ -63,13 +47,13 @@
   async function renderLevelChips(levelId){
     const c = document.querySelector(`[data-chips-for="${CSS.escape(String(levelId))}"]`);
     if (!c) return;
-    c.innerHTML = `<span class="text-xs text-slate-400 inline-flex items-center gap-2">${spinner(16,16)} Loading…</span>`;
+    c.innerHTML = `<div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-widest">${spinner()} Loading…</div>`;
     try{
       const rows = await fetchLevelPrograms(levelId);
-      c.innerHTML = rows.length ? rows.map(r => chipHtml(levelId, r)).join('') : `<span class="text-xs text-slate-400">None yet</span>`;
+      c.innerHTML = rows.length ? rows.map(r => chipHtml(levelId, r)).join('') : `<span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">No programs tagged</span>`;
     }catch(e){
       console.error(e);
-      c.innerHTML = `<span class="text-xs text-red-500">Failed to load</span>`;
+      c.innerHTML = `<span class="text-[10px] font-bold text-rose-400 uppercase tracking-widest">Failed to load</span>`;
     }
   }
 
@@ -80,7 +64,7 @@
     if (!json.ok) throw new Error(json.error || 'Failed to untag');
   }
 
-  // Modal (Add only)
+  // Tag Modal
   const tagModal        = document.getElementById('tagProgramLevelModal');
   const tagModalClose   = document.getElementById('tagProgramLevelModalClose');
   const tagModalCancel  = document.getElementById('tagProgramLevelModalCancel');
@@ -89,16 +73,23 @@
   const tagModalCtx     = document.getElementById('tagProgramLevelContext');
   let currentLevelId    = null;
 
-  function showTagModal(){ if(tagModal) tagModal.classList.remove('hidden'); }
-  function hideTagModal(){ if(tagModal) tagModal.classList.add('hidden'); currentLevelId=null; if (tagModalSelect) tagModalSelect.innerHTML=''; }
+  function showTagModal(){ 
+    tagModal?.classList.remove('hidden'); 
+    document.body.classList.add('overflow-hidden');
+  }
+  function hideTagModal(){ 
+    tagModal?.classList.add('hidden'); 
+    document.body.classList.remove('overflow-hidden');
+    currentLevelId=null; 
+    if (tagModalSelect) tagModalSelect.innerHTML=''; 
+  }
 
   async function openTagModal(levelId, levelName){
     if (!tagModal || !tagModalSelect) return;
     currentLevelId = levelId;
-    if (tagModalCtx) tagModalCtx.textContent = levelName ? `Level: ${levelName}` : '';
+    if (tagModalCtx) tagModalCtx.textContent = levelName ? `LEVEL: ${levelName}` : '';
     showTagModal();
 
-    // load all programs + already-tagged, filter to untagged only
     try {
       const [progsRes, tagged] = await Promise.all([
         fetch(API_PROGRAMS, { credentials:'same-origin' }).then(parseJsonSafe),
@@ -151,56 +142,63 @@
   }
 
   // Level list (cards)
+  function cardHtml(it){
+    const id = Number(it.id);
+    const name = esc(it.name ?? `Level ${id}`);
+    const editButtonsClass = editMode ? '' : 'hidden'; 
 
-function cardHtml(it){
-  const id = Number(it.id);
-  const name = esc(it.name ?? `Level ${id}`);
-  // Hindi na ipapakita ang description para maging payat
-  // const desc = esc(it.description ?? ''); 
-  const editButtonsClass = editMode ? '' : 'hidden'; 
-
-  // Siguraduhing WALANG comments sa loob ng backticks
-  return `<div class="panel px-4 py-4 level-card--compact hover:bg-gray-50 cursor-pointer" data-level-id="${id}" data-level-name="${name}">
-    <div class="flex items-center justify-between gap-4 level-head"> 
-      <div class="min-w-0 flex-shrink"> 
-        <h3 class="text-lg font-semibold leading-snug truncate">${name}</h3> 
-      </div>
-      <div class="flex-grow"></div>
-      <div class="flex-none flex items-center gap-3"> 
-        <div class="flex flex-wrap gap-1 justify-end max-w-xs sm:max-w-sm md:max-w-md" data-chips-for="${id}"> 
+    return `<div class="group relative flex flex-col p-8 bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm hover:shadow-xl hover:shadow-blue-100/40 hover:border-blue-200 transition-all duration-300 cursor-pointer" data-level-id="${id}" data-level-name="${name}">
+        <div class="flex items-center justify-between gap-6 mb-6">
+            <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 shadow-sm">
+                    <i class="fa-solid fa-layer-group text-2xl"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 block mb-1">Accreditation Stage</span>
+                    <h3 class="text-2xl font-black text-slate-900 tracking-tight leading-none">${name}</h3>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <button class="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90" data-action="open-tag-modal" title="Tag Program">
+                    <i class="fa-solid fa-tag text-sm pointer-events-none"></i>
+                </button>
+                <button class="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all active:scale-90 ${editButtonsClass}" data-edit title="Edit Level">
+                    <i class="fa-solid fa-pen text-sm pointer-events-none"></i>
+                </button>
+                <button class="w-11 h-11 flex items-center justify-center rounded-2xl bg-slate-50 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all active:scale-90 ${editButtonsClass}" data-del title="Delete Level">
+                    <i class="fa-solid fa-trash text-sm pointer-events-none"></i>
+                </button>
+            </div>
         </div>
-        <div class="flex items-center gap-1"> 
-          <button class="p-2 rounded-md bg-gray-200 hover:bg-gray-300 text-slate-700" data-action="open-tag-modal" aria-label="Tag programs"><i class="fa-solid fa-tag"></i></button> 
-          <button class="p-2 rounded-md bg-gray-200 hover:bg-gray-300 text-slate-700 ${editButtonsClass}" data-edit aria-label="Edit"><i class="fa-solid fa-pen"></i></button>
-          <button class="p-2 rounded-md bg-gray-200 hover:bg-gray-300 text-slate-700 ${editButtonsClass}" data-del aria-label="Delete"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </div>
-    </div>
-  </div>`; // <-- Dito nagtatapos ang backtick
-}
 
+        <div class="pt-6 border-t border-slate-50">
+            <div class="flex flex-wrap gap-2" data-chips-for="${id}"></div>
+        </div>
+    </div>`;
+  }
 
   async function loadLevels(){
-    if (!instrumentId){ listEl.innerHTML = '<div class="text-gray-500">Missing instrument_id in URL.</div>'; return; }
+    if (!instrumentId){ listEl.innerHTML = '<div class="col-span-full py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">Missing instrument_id in URL.</div>'; return; }
 
-    listEl.innerHTML = `<div class="flex items-center gap-2 text-gray-500">${spinner()} <span>Loading levels…</span></div>`;
+    listEl.innerHTML = `<div class="flex items-center justify-center py-20 gap-3 text-slate-400 font-black uppercase tracking-widest text-xs">${spinner(24,24)} <span>Synchronizing levels…</span></div>`;
     try {
       const res = await fetch(`${API_LEVELS}?instrument_id=${encodeURIComponent(instrumentId)}&t=${Date.now()}`, { credentials:'same-origin' });
       const json = await parseJsonSafe(res);
       const items = (json && json.ok && json.data && Array.isArray(json.data.items)) ? json.data.items : [];
-      listEl.innerHTML = items.length ? items.map(cardHtml).join('') : '<div class="text-gray-500">No levels yet.</div>';
-      // render chips for each card
+      listEl.innerHTML = items.length ? items.map(cardHtml).join('') : '<div class="col-span-full py-20 text-center text-slate-400 font-bold uppercase tracking-widest text-xs">No levels defined for this instrument.</div>';
+      
       document.querySelectorAll('[data-level-id]').forEach(card => {
         const id = parseInt(card.getAttribute('data-level-id'), 10);
         if (id) renderLevelChips(id);
       });
     } catch (e){
       console.error(e);
-      listEl.innerHTML = '<div class="text-red-500">Failed to load levels.</div>';
+      listEl.innerHTML = '<div class="col-span-full py-20 text-center text-rose-500 font-black uppercase tracking-widest text-xs">System failed to retrieve level architecture.</div>';
     }
   }
 
-  // Edit mode toggle (shows pencils & trash)
+  // Edit mode toggle
   let editMode = false;
   function applyEditMode(){
     document.querySelectorAll('[data-edit],[data-del]').forEach(btn => {
@@ -208,9 +206,16 @@ function cardHtml(it){
     });
   }
 
-  // Create/Edit
-  function openModal(){ modal && modal.classList.remove('hidden'); }
-  function closeModal(){ modal && modal.classList.add('hidden'); form && form.reset(); idIn.value=''; }
+  function openModal(){ 
+    modal?.classList.remove('hidden'); 
+    document.body.classList.add('overflow-hidden');
+  }
+  function closeModal(){ 
+    modal?.classList.add('hidden'); 
+    document.body.classList.remove('overflow-hidden');
+    form?.reset(); 
+    idIn.value=''; 
+  }
 
   if (openBtn)  openBtn.addEventListener('click', ()=>{ idIn.value=''; nameIn.value=''; openModal(); });
   if (closeX)   closeX.addEventListener('click', closeModal);
@@ -231,9 +236,8 @@ function cardHtml(it){
     });
   }
 
-  // Delegated actions inside list
+  // Delegated actions
   document.addEventListener('click', async (e)=>{
-    // Open per-card tag modal
     const tagBtn = e.target.closest('[data-action="open-tag-modal"]');
     if (tagBtn){
       const card = tagBtn.closest('[data-level-id]');
@@ -243,7 +247,6 @@ function cardHtml(it){
       return;
     }
 
-    // Untag ×
     const unBtn = e.target.closest('[data-action="untag"]');
     if (unBtn){
       const lid = parseInt(unBtn.getAttribute('data-level-id')||'0', 10);
@@ -258,26 +261,23 @@ function cardHtml(it){
       return;
     }
 
-    // Edit
     const editBtn = e.target.closest('[data-edit]');
     if (editBtn){
       const card = editBtn.closest('[data-level-id]');
       const id = parseInt(card?.getAttribute('data-level-id')||'0', 10);
-      const name = card?.querySelector('h3')?.textContent?.trim() || '';
-      // const desc = ... (inalis na)
+      const name = card?.getAttribute('data-level-name') || '';
       if (id) {
         idIn.value = String(id); nameIn.value = name; openModal();
       }
       return;
     }
 
-    // Delete
     const delBtn = e.target.closest('[data-del]');
     if (delBtn){
       const card = delBtn.closest('[data-level-id]');
       const id = parseInt(card?.getAttribute('data-level-id')||'0', 10);
       if (!id) return;
-      if (!confirm('Delete this level?')) return;
+      if (!confirm('Permanently remove this accreditation level?')) return;
       try{
         const res = await fetch(`${API_LEVELS}?id=${encodeURIComponent(id)}`, { method:'DELETE', credentials:'same-origin' });
         const json = await parseJsonSafe(res);
@@ -288,20 +288,12 @@ function cardHtml(it){
     }
   });
 
-
-  // Navigate to sections when clicking a level card (ignore clicks on interactive controls)
+  // Navigation
   const levelList = document.getElementById('levelList');
   function shouldIgnoreClick(target){
-    return !!target.closest('button, [data-action], [data-del], [data-edit], a, input, select, textarea, label');
+    return !!target.closest('button, [data-action], [data-del], [data-edit], a, input, select, textarea, label, .program-chip');
   }
   levelList?.addEventListener('click', (e)=>{
-    if (shouldIgnoreClick(e.target)) return;
-    const card = e.target.closest('[data-level-id]');
-    if (!card) return;
-    const lid = card.getAttribute('data-level-id');
-    if (lid) window.location.href = 'section.php?level_id=' + encodeURIComponent(lid);
-  });
-  levelList?.addEventListener('dblclick', (e)=>{
     if (shouldIgnoreClick(e.target)) return;
     const card = e.target.closest('[data-level-id]');
     if (!card) return;
@@ -312,19 +304,16 @@ function cardHtml(it){
   // Top bar buttons
   const editToggleBtn = document.getElementById('levelEditToggleBtn');
   if (editToggleBtn){
-    editToggleBtn.addEventListener('click', ()=>{ editMode = !editMode; applyEditMode(); editToggleBtn.classList.toggle('ring-2', editMode); });
-  }
-  if (tagModeBtn){
-    tagModeBtn.addEventListener('click', ()=>{
-      // Give a light glow to tag buttons to guide the user
-      document.querySelectorAll('[data-action="open-tag-modal"]').forEach(b=> b.classList.add('ring-2','ring-blue-500'));
-      setTimeout(()=>document.querySelectorAll('[data-action="open-tag-modal"]').forEach(b=> b.classList.remove('ring-2','ring-blue-500')), 1200);
+    editToggleBtn.addEventListener('click', ()=>{ 
+        editMode = !editMode; 
+        applyEditMode(); 
+        editToggleBtn.classList.toggle('bg-blue-600', editMode); 
+        editToggleBtn.classList.toggle('text-white', editMode); 
     });
   }
 
   // Init
   document.addEventListener('DOMContentLoaded', ()=>{
     loadLevels();
-    applyEditMode();
   });
 })();

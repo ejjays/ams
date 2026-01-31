@@ -1,75 +1,145 @@
-# 🎓 Accreditation Management System (AMS) with AI Insights
+# AI-Powered Accreditation Management System (AMS)
 
-A professional, high-performance web application designed to streamline academic accreditation tracking. Now supercharged with **Gemini 2.5 Flash AI** for intelligent document classification and progress analytics.
+![Version](https://img.shields.io/badge/version-2.5-blue.svg) ![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4.svg) ![AI](https://img.shields.io/badge/AI-Gemini%20%2B%20Llama-orange) ![Status](https://img.shields.io/badge/status-active-success.svg)
 
-## 🚀 Key Features
-
-### 🤖 AI-Driven Intelligence
-- **Automated Document Tagging:** Gemini AI automatically analyzes uploaded file metadata and links documents to the most relevant accreditation indicators, reducing manual data entry.
-- **Progress Analytics:** Real-time compliance monitoring that uses AI to summarize program readiness, identifying gaps in evidence and providing actionable insights on the dashboard.
-
-### 📋 Core Management
-- **Role-Based Access Control (RBAC):** Secure access for Admins, Deans, Program Coordinators, Faculty, and External Accreditors.
-- **Dynamic Accreditation Tracking:** Manage instruments, levels, areas, and parameters with a clean, hierarchical tree structure.
-- **Evidence Repository:** Centralized document management system with secure storage, sharing capabilities, and a 5-year auto-archive policy.
-- **Visit Scheduling:** Integrated calendar for tracking accreditation visits and deadlines.
-
-### 🔒 Security & Performance
-- **Multi-Level Lockout:** Advanced security logic to prevent brute-force attacks with progressive lockout durations.
-- **Two-Factor Authentication (OTP):** Secure login flow requiring a One-Time Password verification.
-- **Automated Session Handling:** Intelligent session management with a 15-minute inactivity timeout for data protection.
-- **Optimized Performance:** Uses a lightweight PHP (PDO) backend with Vanilla JS for a responsive, "app-like" experience.
+This is a high-performance web application built to simplify tracking academic accreditation. The system includes a powerful **Hybrid AI Engine** (Gemini 2.5 Flash and Llama 3.3) for smart compliance analytics and document management, all in a secure, responsive interface.
 
 ---
 
-## 🛠 Tech Stack
-- **Backend:** PHP 8.x (PDO MySQL)
-- **Frontend:** Vanilla JavaScript, Tailwind CSS, Chart.js
-- **AI Engine:** Google Gemini 2.5 Flash
-- **Database:** MySQL / MariaDB
+## Key Features
+
+### Hybrid AI Intelligence
+
+- **Smart Analytics:** Uses **Llama 3.3 (via Groq)** to analyze compliance data and create summaries of institutional readiness.
+- **Visual Insight:** Utilizes **Gemini 2.5 Flash** to process document metadata and visual content for automated tagging and relevance scoring.
+- **Quota Optimization:** Smart routing automatically switches between models to improve API usage and performance.
+
+### Enterprise-Grade Security
+
+- **Advanced Authentication:** Multi-level lockout protection against brute-force attacks.
+- **Auth Guard:** Strict session management with a 15-minute inactivity timeout (`auth_guard.php`).
+- **Audit Trail:** Logs all critical actions (Create, Update, Archive) tracked by user IP and ID.
+- **Soft Deletes:** "Smart Restore" feature allows recovery of accidentally archived programs and documents.
+
+### Dashboard & Visualization
+
+- **Real-Time Metrics:** Live KPI cards for Programs, Visits, Users, and Documents.
+- **Interactive Charts:** Dynamic Doughnut and Bar charts (Chart.js) visualize evidence submissions versus reviews.
+- **Notice Board:** Automated system notices for upcoming visits, overdue tasks, and new document uploads.
 
 ---
 
-## 📦 Project Structure
+## Technical Architecture
+
+### Stack
+
+- **Backend:** PHP 8.x (Pure/Native, PDO Database Abstraction)
+- **Frontend:** Vanilla JavaScript (ES6+), TailwindCSS (CDN), FontAwesome
+- **Database:** MySQL / MariaDB (Relational Schema)
+- **AI Services:** Google Gemini API, Groq Cloud API
+
+### Directory Structure
+
 ```text
-├── app/            # Frontend Assets (CSS, JS)
-├── PHP/            # Core Logic & API Endpoints
-│   ├── Gemini.php  # AI Service Integration
-│   ├── db.php      # Database Connection
-│   └── *_api.php   # REST-like API Providers
-├── DATABASE/       # SQL Schema & Dumps
-├── MIGRATIONS/     # Database Versioning
-└── uploads/        # Secure Document Storage
+/ams
+├── app/                  # Frontend Assets
+│   ├── css/              # Modular Stylesheets (Dashboard, Auth, etc.)
+│   └── js/               # ES6 Modules and UI Logic
+├── DATABASE/             # SQL Schema Definitions
+│   └── master_accred_v2.sql  # Primary Database Schema
+├── PHP/                  # Core Application Logic (API and Views)
+│   ├── services/         # Specialized Services (AIService.php)
+│   ├── partials/         # Reusable UI Components
+│   ├── *_api.php         # RESTful JSON Endpoints
+│   └── db.php            # Centralized Database Connection
+└── uploads/              # Secure Storage for Evidence Documents
 ```
 
 ---
 
-## ⚙️ Installation & Setup
+## Installation & Setup
 
-1. **Clone the Repository:**
+### 1. Prerequisites
+
+- Web Server (Apache or Nginx)
+- PHP 8.0 or higher (with `pdo_mysql` and `curl` extensions)
+- MySQL Database Server
+
+### 2. Database Setup
+
+1. Create a new MySQL database (for example, `ams_db`).
+2. Import the schema file:
    ```bash
-   git clone https://github.com/ejjays/ams.git
+   mysql -u root -p ams_db < DATABASE/master_accred_v2.sql
    ```
 
-2. **Database Configuration:**
-   - Import `DATABASE/accred.sql` into your local MySQL instance.
-   - Configure your credentials in `PHP/db.php` or a `.env` file.
+### 3. Environment Configuration
 
-3. **AI Configuration:**
-   - Add your Gemini API key to `PHP/.env`:
-     ```text
-     GEMINI_API_KEY=your_actual_api_key_here
-     ```
+Create a `.env` file in the **project root** directory:
 
-4. **Web Server:**
-   - Deploy to a PHP-enabled server (Apache/Nginx/KSWEB).
-   - Ensure the `uploads/` directory is writable by the server.
+```ini
+DB_HOST=localhost
+DB_NAME=ams_db
+DB_USER=root
+DB_PASS=
 
-5. **Access the App:**
-   - Navigate to the root directory in your browser.
-   - Default redirect: `PHP/sms.php` -> `PHP/login.php`.
+# AI Configuration (Optional for basic features, Required for AI)
+GEMINI_API_KEY=your_gemini_key
+GROQ_API_KEY=your_groq_key
+```
+
+### 4. Permissions
+
+Make sure the web server has write access to the uploads directory:
+
+```bash
+chmod -R 755 uploads/
+```
 
 ---
 
-## 📜 Development Guidelines
-This project follows strict modularity and clean code standards. Refer to `GEMINI.md` for coding conventions and documentation requirements.
+## Usage & Credentials (Demo Mode)
+
+For development and testing, the system comes pre-configured with a **Test OTP**.
+
+### Login Flow
+
+1. **URL:** Go to `/PHP/login.php` (or root `index.php`, which redirects).
+2. **Credentials:** Use any valid user from your database (or register a new one).
+3. **OTP Verification:**
+   - The system simulates sending an email or SMS.
+   - **Enter Code:** `041102` (Hardcoded Developer Code)
+   - **Backdoor:** `000000` (Emergency Bypass)
+
+> **WARNING:** Before going live, you **MUST** update `PHP/otp_verify.php` to integrate a real SMS/Email gateway (for example, PHPMailer or Twilio) and remove the hardcoded credentials.
+
+---
+
+## API Documentation
+
+The backend works mainly as a JSON API. Frontend files access these endpoints asynchronously.
+
+| Endpoint                                    | Method | Description                                                |
+| :------------------------------------------ | :----- | :--------------------------------------------------------- |
+| `PHP/dashboard_api.php?action=summary`      | `GET`  | Returns aggregated stats, chart data, and system notices.  |
+| `PHP/dashboard_api.php?action=ai_analytics` | `GET`  | Activates the AI analysis engine for compliance reporting. |
+| `PHP/programs_api.php`                      | `GET`  | Lists all active programs.                                 |
+| `PHP/programs_api.php`                      | `POST` | Creates a new program (or restores if archived).           |
+| `PHP/programs_api.php`                      | `PUT`  | Updates program details.                                   |
+
+---
+
+## Contributing
+
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`).
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
+4. Push to the branch (`git push origin feature/AmazingFeature`).
+5. Open a Pull Request.
+
+---
+
+## License
+
+This project is proprietary software. Unauthorized copying of this file, through any medium, is strictly prohibited.  
+© 2026 Bestlink College of the Philippines
